@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    #    url: jdbc:mysql://duruduru-db.cpgoe06g6rjt.ap-northeast-2.rds.amazonaws.com:3306/duruduru_db
+    #    username: root
+    #    password: Duruduru7thumc!
+    url: jdbc:mysql://localhost:3306/openstep_db
+    username: root
+    password: parkjh990308!
+  sql:
+    init:
+      mode: never
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+        hbm2ddl:
+          auto: create  #create, update
+        default_batch_fetch_size: 1000
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+

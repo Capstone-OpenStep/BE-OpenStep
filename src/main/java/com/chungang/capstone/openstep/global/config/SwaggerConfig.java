@@ -15,7 +15,7 @@ public class SwaggerConfig {
     public OpenAPI OpenStepAPI() {
         Info info = new Info()
                 .title("OpenStep Swagger")
-                .description("Capstone-OpenStep server Swagger")
+                .description("Capstone-Team01-OpenStep server Swagger")
                 .version("1.0.0");
 
         String jwtSchemeName = "JWT TOKEN";
