@@ -8,6 +8,7 @@ public class OpenstepApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(OpenstepApplication.class, args);
+		System.out.println("[Initiate Capstone Project OpenStep]");
 	}
 
 }
