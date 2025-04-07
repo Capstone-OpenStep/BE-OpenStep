@@ -1,8 +1,0 @@
-spring:
-  application:
-    name: openstep
-
-  datasource:
-    url: jdbc:mysql://mysql-db:3306/openstep
-    username: root
-    password: root
