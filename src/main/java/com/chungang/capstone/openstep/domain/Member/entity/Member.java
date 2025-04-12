@@ -1,4 +1,59 @@
 package com.chungang.capstone.openstep.domain.Member.entity;
 
-public class Member {
+import com.chungang.capstone.openstep.domain.Bookmark.entity.Bookmark;
+import com.chungang.capstone.openstep.domain.Rank.entity.Rank;
+import com.chungang.capstone.openstep.domain.Task.entity.Task;
+import com.chungang.capstone.openstep.domain.common.BaseEntity;
+import jakarta.persistence.*;
+import lombok.*;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+public class Member extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "member_id")
+    private Long memberId;
+
+    @Column(nullable = false, unique = true)
+    private String githubId;
+
+    @Column(nullable = true, unique = true)
+    private String email;
+
+    @Column(nullable = true)
+    private String password;
+
+    private String nickname;
+
+    private int level;
+
+    private int xp;
+
+    @ElementCollection
+    @CollectionTable(name = "member_skills", joinColumns = @JoinColumn(name = "member_id"))
+    private List<String> skills = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "member_interests", joinColumns = @JoinColumn(name = "member_id"))
+    private List<String> interests = new ArrayList<>();
+
+    private int projectExperience;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Bookmark> bookmarks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Task> tasks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Rank> ranks = new ArrayList<>();
 }
+
