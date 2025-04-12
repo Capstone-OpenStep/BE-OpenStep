@@ -1,4 +1,7 @@
 package com.chungang.capstone.openstep.domain.Issue.repository;
 
-public interface IssueRepository {
+import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface IssueRepository extends JpaRepository<Issue, Long> {
 }

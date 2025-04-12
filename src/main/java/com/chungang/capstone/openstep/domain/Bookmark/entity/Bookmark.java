@@ -1,7 +1,7 @@
-package com.chungang.capstone.openstep.domain.Task.entity;
+package com.chungang.capstone.openstep.domain.Bookmark.entity;
 
-import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
 import com.chungang.capstone.openstep.domain.Member.entity.Member;
+import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
 import com.chungang.capstone.openstep.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,24 +16,18 @@ import java.util.List;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class Task extends BaseEntity {
+public class Bookmark extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "task_id")
-    private Long taskId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "issue_id", nullable = false)
-    private Issue issue;
+    @Column(name = "bookmark_id")
+    private Long bookmarkId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    private String status; // ASSIGNED / PR_CREATED / MERGED 등
-
-    private String branchName;
-
-    private String prUrl;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "repo_id", nullable = false)
+    private Repo repo;
 }
