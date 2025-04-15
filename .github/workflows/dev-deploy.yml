@@ -17,6 +17,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: application.yml
+        if: contains(github.ref, 'develop')
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.APPLICATION_YML }}" > src/main/resources/application.yml
+
       - name: Cache Gradle dependencies
         uses: actions/cache@v3
         with:
@@ -33,10 +39,6 @@ jobs:
       - name: Build with Gradle # Gradle 빌드
         run: ./gradlew build -x test --no-daemon --parallel --build-cache
 
-      - name: Set up application.yml
-        run: |
-          mkdir -p src/main/resources
-          echo "${{ secrets.APPLICATION_YML }}" > src/main/resources/application.yml
 
       - name: Set up docker-compose.yml
         if: contains(github.ref, 'develop')
