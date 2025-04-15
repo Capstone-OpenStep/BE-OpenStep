@@ -33,6 +33,17 @@ jobs:
       - name: Build with Gradle # Gradle 빌드
         run: ./gradlew build -x test --no-daemon --parallel --build-cache
 
+      - name: Set up Docker Compose File
+        if: contains(github.ref, 'develop')
+        run: |
+          echo "${{ secrets.DOCKERCOMPOSE_YML }}" > docker-compose.yml
+
+      - name: Set up application.yml file
+        if: contains(github.ref, 'develop')
+        run: |
+          mkdir -p ./src/main/resources
+          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
+
       - name: Docker build & push to dev
         if: contains(github.ref, 'develop')
         run: |
@@ -47,17 +58,19 @@ jobs:
     steps:
       - name: Copy docker-compose.yml to EC2
         run: |
+          echo "${{ secrets.DOCKERCOMPOSE_YML }}" > docker-compose.yml
           echo "${{ secrets.PRIVATE_KEY }}" > key.pem
           chmod 600 key.pem
           scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml ${{ secrets.USERNAME }}@${{ secrets.HOST_DEV }}:/home/${{ secrets.USERNAME }}/docker-compose.yml
-          rm -f key.pem
+          rm -f key.pem docker-compose.yml
 
       - name: Copy application.yml to EC2
         run: |
+          echo "${{ secrets.APPLICATION_YML }}" > application.yml
           echo "${{ secrets.PRIVATE_KEY }}" > key.pem
           chmod 600 key.pem
-          scp -i key.pem -o StrictHostKeyChecking=no ./src/main/resources/application.yml ${{ secrets.USERNAME }}@${{ secrets.HOST_DEV }}:/home/${{ secrets.USERNAME }}/application.yml
-          rm -f key.pem
+          scp -i key.pem -o StrictHostKeyChecking=no application.yml ${{ secrets.USERNAME }}@${{ secrets.HOST_DEV }}:/home/${{ secrets.USERNAME }}/application.yml
+          rm -f key.pem application.yml
 
       ## deploy to develop
       - name: Deploy to dev
