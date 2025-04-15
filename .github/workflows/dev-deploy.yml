@@ -27,35 +27,11 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
-
-      - name: Create application.yml  # application.yml 파일 생성 최적화
-        run: |
-          mkdir -p ./src/main/resources
-          cat << EOF > ./src/main/resources/application.yml
-          ${{ secrets.APPLICATION_YML }}
-          EOF
-        shell: bash
-
-      #환경별 파일 생성
-
-
       - name: Grant execute permission for Gradlew # gradlew 실행 권한 부여
         run: chmod +x gradlew
 
       - name: Build with Gradle # Gradle 빌드
         run: ./gradlew build -x test --no-daemon --parallel --build-cache
-
-#      - name: Docker build & push to main
-#        if: contains(github.ref, 'main')
-#        run: |
-#          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-#          docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_USERNAME }}/docker-test-prod .
-#          docker push ${{ secrets.DOCKER_USERNAME }}/docker-test-prod
-
-
-      - name: Set up Docker Compose File
-        run: |
-          echo "${{ secrets.DOCKERCOMPOSE_YML }}" > docker-compose.yml
 
       - name: Docker build & push to dev
         if: contains(github.ref, 'develop')
@@ -64,30 +40,24 @@ jobs:
           docker compose -f docker-compose.yml build
           docker compose -f docker-compose.yml push
 
-
   deploy:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-#      ## deploy to production
-#      - name: Deploy to prod
-#        uses: appleboy/ssh-action@master
-#        id: deploy-prod
-#        if: contains(github.ref, 'main')
-#        with:
-#          host: ${{ secrets.HOST_PROD }} # EC2 퍼블릭 IPv4 DNS
-#          username: ubuntu
-#          key: ${{ secrets.PRIVATE_KEY }}
-#          envs: GITHUB_SHA
-#          script: |
-#            sudo docker ps
-#            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/docker-test-prod
-#            sudo docker run -d -p 8082:8082 ${{ secrets.DOCKER_USERNAME }}/docker-test-prod
-#            sudo docker image prune -f
-      - name: Set up Docker Compose File
+      - name: Copy docker-compose.yml to EC2
         run: |
-          echo "${{ secrets.DOCKERCOMPOSE_YML }}" > docker-compose.yml
+          echo "${{ secrets.PRIVATE_KEY }}" > key.pem
+          chmod 600 key.pem
+          scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml ${{ secrets.USERNAME }}@${{ secrets.HOST_DEV }}:/home/${{ secrets.USERNAME }}/docker-compose.yml
+          rm -f key.pem
+
+      - name: Copy application.yml to EC2
+        run: |
+          echo "${{ secrets.PRIVATE_KEY }}" > key.pem
+          chmod 600 key.pem
+          scp -i key.pem -o StrictHostKeyChecking=no ./src/main/resources/application.yml ${{ secrets.USERNAME }}@${{ secrets.HOST_DEV }}:/home/${{ secrets.USERNAME }}/application.yml
+          rm -f key.pem
 
       ## deploy to develop
       - name: Deploy to dev
