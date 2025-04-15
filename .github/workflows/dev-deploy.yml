@@ -98,6 +98,9 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             cd /home/${{ secrets.USERNAME }}/app
+            echo ${{ secrets.PRIVATE_KEY }} > key.pem
+            chmod 600 key.pem
+            ssh -i key.pem -o StrictHostKeyChecking=no $USERNAME@$HOST_DEV "echo SSH 성공"
             docker compose -f docker-compose.yml pull
             docker compose -f docker-compose.yml up -d --remove-orphans
             docker image prune -f
