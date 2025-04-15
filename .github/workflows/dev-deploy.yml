@@ -56,9 +56,8 @@ jobs:
         if: contains(github.ref, 'develop')
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          echo "Building image: ${{ secrets.DOCKER_USERNAME }}/openstep:dev"
-          docker build -f Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/openstep:dev .
-          docker push ${{ secrets.DOCKER_USERNAME }}/openstep:dev
+          docker compose -f ${{secrets.DOCKERCOMPOSE_YML}} build
+          docker compose -f ${{secrets.DOCKERCOMPOSE_YML}} push
 
 
   deploy:
@@ -88,12 +87,12 @@ jobs:
         id: deploy-dev
         if: contains(github.ref, 'develop')
         with:
-          host: ${{ secrets.HOST_DEV }} # EC2 퍼블릭 IPv4 DNS
-          username: ${{ secrets.USERNAME }} # ubuntu
+          host: ${{ secrets.HOST_DEV }}
+          username: ${{ secrets.USERNAME }}
           port: 22
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            sudo docker ps
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/docker-test-dev
-            sudo docker run -d -p 8081:8081 ${{ secrets.DOCKER_USERNAME }}/docker-test-dev
-            sudo docker image prune -f
+            cd /home/${{ secrets.USERNAME }}/app  # 프로젝트 경로로 이동
+            docker compose -f d${{secrets.DOCKERCOMPOSE_YML}} pull
+            docker compose -f ${{secrets.DOCKERCOMPOSE_YML}} up -d --remove-orphans
+            docker image prune -f
