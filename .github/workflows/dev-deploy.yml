@@ -97,7 +97,7 @@ jobs:
           port: 22
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.USERNAME }}/app  # 프로젝트 경로로 이동
-            docker compose -f ${{secrets.DOCKERCOMPOSE_YML}} pull
-            docker compose -f ${{secrets.DOCKERCOMPOSE_YML}} up -d --remove-orphans
+            cd /home/${{ secrets.USERNAME }}/app
+            docker compose -f docker-compose.yml pull
+            docker compose -f docker-compose.yml up -d --remove-orphans
             docker image prune -f
