@@ -61,8 +61,8 @@ jobs:
         if: contains(github.ref, 'develop')
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker compose -f docker-compose.yml build
-          docker compose -f docker-compose.yml push
+          docker-compose -f docker-compose.yml build
+          docker-compose -f docker-compose.yml push
 
 
   deploy:
@@ -85,6 +85,14 @@ jobs:
 #            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/docker-test-prod
 #            sudo docker run -d -p 8082:8082 ${{ secrets.DOCKER_USERNAME }}/docker-test-prod
 #            sudo docker image prune -f
+      - name: Upload necessary files to EC2
+        run: |
+          echo "$SSH_PRIVATE_KEY" > key.pem
+          chmod 600 key.pem
+          scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml ${{ secrets.USERNAME }}@${{ secrets.HOST_DEV }}:/home/${{ secrets.USERNAME }}/docker-compose.yml
+          rm -f key.pem
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
 
       ## deploy to develop
       - name: Deploy to dev
