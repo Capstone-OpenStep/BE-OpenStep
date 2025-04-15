@@ -85,14 +85,9 @@ jobs:
 #            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/docker-test-prod
 #            sudo docker run -d -p 8082:8082 ${{ secrets.DOCKER_USERNAME }}/docker-test-prod
 #            sudo docker image prune -f
-      - name: Upload necessary files to EC2
+      - name: Set up Docker Compose File
         run: |
-          echo "$SSH_PRIVATE_KEY" > key.pem
-          chmod 600 key.pem
-          scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml ${{ secrets.USERNAME }}@${{ secrets.HOST_DEV }}:/home/${{ secrets.USERNAME }}/docker-compose.yml
-          rm -f key.pem
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          echo "${{ secrets.DOCKERCOMPOSE_YML }}" > docker-compose.yml
 
       ## deploy to develop
       - name: Deploy to dev
