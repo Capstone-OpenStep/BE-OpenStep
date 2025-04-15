@@ -33,16 +33,9 @@ jobs:
       - name: Build with Gradle # Gradle 빌드
         run: ./gradlew build -x test --no-daemon --parallel --build-cache
 
-      - name: Set up Docker Compose File
+      - name: Set up docker-compose.yml
         if: contains(github.ref, 'develop')
-        run: |
-          echo "${{ secrets.DOCKERCOMPOSE_YML }}" > docker-compose.yml
-
-      - name: Set up application.yml file
-        if: contains(github.ref, 'develop')
-        run: |
-          mkdir -p ./src/main/resources
-          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
+        run: echo "${{ secrets.DOCKERCOMPOSE_YML }}" > docker-compose.yml
 
       - name: Docker build & push to dev
         if: contains(github.ref, 'develop')
@@ -66,11 +59,10 @@ jobs:
 
       - name: Copy application.yml to EC2
         run: |
-          echo "${{ secrets.APPLICATION_YML }}" > application.yml
           echo "${{ secrets.PRIVATE_KEY }}" > key.pem
           chmod 600 key.pem
-          scp -i key.pem -o StrictHostKeyChecking=no application.yml ${{ secrets.USERNAME }}@${{ secrets.HOST_DEV }}:/home/${{ secrets.USERNAME }}/application.yml
-          rm -f key.pem application.yml
+          scp -i key.pem -o StrictHostKeyChecking=no ./src/main/resources/application.yml ${{ secrets.USERNAME }}@${{ secrets.HOST_DEV }}:/home/${{ secrets.USERNAME }}/application.yml
+          rm -f key.pem
 
       ## deploy to develop
       - name: Deploy to dev
@@ -84,6 +76,7 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             cd /home/${{ secrets.USERNAME }}
+            docker-compose -f docker-compose.yml down
             docker-compose -f docker-compose.yml pull
             docker-compose -f docker-compose.yml up -d --remove-orphans
             docker image prune -f
