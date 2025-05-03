@@ -6,6 +6,8 @@ import com.chungang.capstone.openstep.domain.Repo.dto.GitHubRepoResponse.Node;
 import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
 import com.chungang.capstone.openstep.domain.Repo.repository.RepoRepository;
 import com.chungang.capstone.openstep.domain.Repo.converter.RepoConverter;
+import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
+import com.chungang.capstone.openstep.global.apiPayload.exception.handler.RepoHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -67,6 +69,6 @@ public class RepoQueryService {
 
     public Repo getRepoById(Long repoId) {
         return repoRepository.findById(repoId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 레포지토리입니다."));
+                .orElseThrow(() -> new RepoHandler(ErrorStatus.REPO_NOT_FOUND));
     }
 }

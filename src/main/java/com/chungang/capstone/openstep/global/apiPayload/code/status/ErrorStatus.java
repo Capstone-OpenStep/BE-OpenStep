@@ -28,6 +28,7 @@ public enum ErrorStatus implements BaseErrorCode {
     // 레포지토리 관련 에러 2000
     REPO_NOT_FOUND(HttpStatus.NOT_FOUND, "REPO_2001", "존재하지 않는 레포지토리입니다.");
 
+
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
