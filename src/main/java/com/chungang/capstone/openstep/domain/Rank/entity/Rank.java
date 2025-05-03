@@ -16,6 +16,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Table(name = "member_rank")
 public class Rank extends BaseEntity {
 
     @Id

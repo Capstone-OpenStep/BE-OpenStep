@@ -38,6 +38,9 @@ public class SecurityConfig {
                                 // Member 관련 접근
                                 .requestMatchers("/member/register", "/member/login/kakao", "/member/login/naver", "/member/login/email","/member/refresh").permitAll()
 
+                                // Repo 관련 접근
+                                .requestMatchers("/repo/trending", "/repo/{repo-id}").permitAll()
+
                                 // 기타 관련 접근
                                 .requestMatchers("/example/**").permitAll()
                                 .requestMatchers("/", "/api-docs/**", "/api-docs/swagger-config/*", "/swagger-ui/*", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
