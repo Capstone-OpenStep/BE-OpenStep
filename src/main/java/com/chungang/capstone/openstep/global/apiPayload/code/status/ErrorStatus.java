@@ -23,8 +23,10 @@ public enum ErrorStatus implements BaseErrorCode {
     // 회원 관련 에러 1000
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEMBER_1001", "사용자가 없습니다."),
     MEMBER_NAME_NOT_EXIST(HttpStatus.BAD_REQUEST, "MEMBER_1002", "이름입력은 필수 입니다."),
-    MEMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "MEMBER_1003", "이미 존재하는 유저입니다.");
+    MEMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "MEMBER_1003", "이미 존재하는 유저입니다."),
 
+    // 레포지토리 관련 에러 2000
+    REPO_NOT_FOUND(HttpStatus.NOT_FOUND, "REPO_2001", "존재하지 않는 레포지토리입니다.");
 
     private final HttpStatus httpStatus;
     private final String code;
