@@ -38,12 +38,27 @@ public class GitHubGraphQLService {
                   owner {
                     login
                   }
+                  forkCount
+                  openIssues: issues(states: OPEN) {
+                    totalCount
+                  }
+                  closedIssues: issues(states: CLOSED) {
+                    totalCount
+                  }
+                  goodFirstIssue: issues(first: 1) {
+                    totalCount
+                  }
+                  watchers {
+                    totalCount
+                  }
+                  updatedAt
                 }
               }
             }
           }
         }
         """;
+
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

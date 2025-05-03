@@ -15,10 +15,16 @@ public class RepoConverter {
                         .ownerName(repo.getOwnerName())
                         .language(repo.getLanguage())
                         .stars(repo.getStars())
+                        .watchers(repo.getWatchers())
+                        .forks(repo.getForks())
+                        .openIssues(repo.getOpenIssues())
+                        .closedIssues(repo.getClosedIssues())
                         .githubUrl(repo.getGithubUrl())
+                        .description(repo.getDescription())
                         .build())
                 .toList();
     }
+
 
     public static RepoResponseDTO.RepoDetailDTO toRepoDetailDTO(Repo repo) {
         return RepoResponseDTO.RepoDetailDTO.builder()

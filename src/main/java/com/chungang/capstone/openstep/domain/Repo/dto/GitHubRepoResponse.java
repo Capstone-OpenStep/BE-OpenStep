@@ -1,6 +1,8 @@
 package com.chungang.capstone.openstep.domain.Repo.dto;
 
 import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
 @Getter
@@ -30,6 +32,42 @@ public class GitHubRepoResponse {
         private int stargazerCount;
         private Language primaryLanguage;
         private Owner owner;
+        private Integer forkCount;
+        private Issues openIssues;
+        private Issues closedIssues;
+        private Issues goodFirstIssue;
+        public Watchers watchers;
+        private String updatedAt;
+
+        public Integer getForkCount() {
+            return forkCount;
+        }
+
+        public int getWatchersCount() {
+            return watchers != null ? watchers.totalCount : 0;
+        }
+        public int getOpenIssuesCount() {
+            return openIssues != null ? openIssues.getTotalCount() : 0;
+        }
+
+        public int getClosedIssuesCount() {
+            return closedIssues != null ? closedIssues.getTotalCount() : 0;
+        }
+
+        public int getGoodFirstIssueCount() {
+            return goodFirstIssue != null ? goodFirstIssue.getTotalCount() : 0;
+        }
+    }
+
+    @Getter
+    public static class Watchers {
+        private int totalCount;
+    }
+
+    @Getter
+    @Setter
+    public static class Issues {
+        private int totalCount;
     }
 
     @Getter

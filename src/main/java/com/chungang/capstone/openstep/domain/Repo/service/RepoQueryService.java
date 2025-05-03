@@ -9,6 +9,8 @@ import com.chungang.capstone.openstep.domain.Repo.converter.RepoConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,12 +33,11 @@ public class RepoQueryService {
 
         List<Repo> repos = gitHubRepoResponse.getData().getSearch().getEdges()
                 .stream()
-                .map(edge -> saveIfNotExists(edge.getNode()))
+                .map(edge -> edge.getNode())
+                //.filter(node -> node.getStargazerCount() > 10000) // 별점 1,000 이상인 레포지토리만 필터링
+                .filter(node -> node.getOpenIssuesCount() > 0 && node.getGoodFirstIssueCount() > 0) // 오픈 이슈가 1개 이상이고, goodFirstIssue가 1개 이상인 레포지토리만 필터링
+                .map(this::saveIfNotExists)
                 .collect(Collectors.toList());
-
-
-        // DB 저장
-        // repoRepository.saveAll(repos);
 
         return repos;
     }
@@ -54,6 +55,12 @@ public class RepoQueryService {
                 .stars(node.getStargazerCount())
                 .githubUrl(node.getUrl())
                 .ownerName(node.getOwner() != null ? node.getOwner().getLogin() : null)
+                .forks(node.getForkCount() != null ? node.getForkCount() : 0)
+                .openIssues(node.getOpenIssues() != null ? node.getOpenIssues().getTotalCount() : 0)
+                .closedIssues(node.getClosedIssues() != null ? node.getClosedIssues().getTotalCount() : 0)
+                .watchers(node.getWatchers() != null ? node.getWatchers().getTotalCount() : 0)
+                .watchers(node.getWatchersCount())
+                .lastGithubUpdate(node.getUpdatedAt() != null ? OffsetDateTime.parse(node.getUpdatedAt()).toLocalDateTime() : null)
                 .build();
     }
 

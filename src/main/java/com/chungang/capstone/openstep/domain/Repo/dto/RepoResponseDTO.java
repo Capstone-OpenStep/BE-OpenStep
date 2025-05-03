@@ -16,8 +16,13 @@ public class RepoResponseDTO {
         private String repoName;
         private String ownerName;
         private String language;
-        private int stars;
+        private Integer stars;
+        private Integer watchers;
+        private Integer forks;
+        private Integer openIssues;
+        private Integer closedIssues;
         private String githubUrl;
+        private String description;
     }
 
     @Getter
