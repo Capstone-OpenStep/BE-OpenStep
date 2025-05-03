@@ -6,7 +6,7 @@ public class GithubOAuthDTO {
 
 	public record GithubOAuthReq(
 		String client_id,
-		String client_secrete,
+		String client_secret,
 		String code
 	) {}
 
