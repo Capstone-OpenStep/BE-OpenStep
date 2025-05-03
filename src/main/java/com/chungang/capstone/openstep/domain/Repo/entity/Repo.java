@@ -25,15 +25,23 @@ public class Repo extends BaseEntity {
 
     private String repoName;
 
+    private String ownerName;
+
     private String description;
 
     private String language;
 
     private int stars;
+    private int watchers;
+    private int forks;
+    private int openIssues;
+    private int closedIssues;
 
     private String githubUrl;
 
-    private LocalDateTime updatedAt;
+    private String readmeUrl;
+
+    private LocalDateTime lastGithubUpdate;
 
     @OneToMany(mappedBy = "repo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Issue> issues = new ArrayList<>();
@@ -41,3 +49,4 @@ public class Repo extends BaseEntity {
     @OneToMany(mappedBy = "repo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bookmark> bookmarks = new ArrayList<>();
 }
+

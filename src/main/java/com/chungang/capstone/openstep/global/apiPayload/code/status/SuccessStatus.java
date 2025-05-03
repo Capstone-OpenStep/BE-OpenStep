@@ -20,7 +20,11 @@ public enum SuccessStatus implements BaseCode {
     USER_REGISTER_OK(HttpStatus.OK, "AUTH2000", "회원 가입이 완료되었습니다."),
 
     // 유저 관련 응답
-    MEMBER_OK(HttpStatus.OK, "MEMBER_1000", "성공입니다.");
+    MEMBER_OK(HttpStatus.OK, "MEMBER_1000", "성공입니다."),
+
+    // 레포지토리 관련 응답
+    REPO_GET_TRENDING_OK(HttpStatus.OK, "REPO_2001", "트렌딩 레포지토리 리스트를 성공적으로 조회하였습니다."),
+    REPO_GET_DETAIL_OK(HttpStatus.OK, "REPO_2002", "레포지토리 상세 정보를 성공적으로 조회하였습니다.");
 
 
 
