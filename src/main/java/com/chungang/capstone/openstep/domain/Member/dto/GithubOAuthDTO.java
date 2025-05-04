@@ -17,6 +17,6 @@ public class GithubOAuthDTO {
 	) {}
 
 	public record GithubUserInfoRes(
-		String name
+		String login
 	){}
 }
