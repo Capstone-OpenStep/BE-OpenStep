@@ -9,7 +9,6 @@ import com.chungang.capstone.openstep.domain.Member.converter.MemberConverter;
 import com.chungang.capstone.openstep.domain.Member.dto.GithubOAuthDTO;
 import com.chungang.capstone.openstep.domain.Member.dto.LoginResult;
 import com.chungang.capstone.openstep.domain.Member.dto.MemberResponseDTO;
-import com.chungang.capstone.openstep.domain.Member.entity.Member;
 import com.chungang.capstone.openstep.domain.Member.service.GithubOauthService;
 import com.chungang.capstone.openstep.global.apiPayload.ApiResponse;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
@@ -30,7 +29,7 @@ public class GithubOAuthController {
 	private final GithubOauthService githubOauthService;
 
 	@GetMapping("/callback")
-	public ApiResponse<MemberResponseDTO.MemberResponse> getUserByGithub(@RequestParam("code") String code){
+	public ApiResponse<MemberResponseDTO.MemberRes> getUserByGithub(@RequestParam("code") String code){
 		try {
 			String accessToken = githubOauthService.getAccessTokenByCode(code);
 			GithubOAuthDTO.GithubUserInfoRes user= githubOauthService.getGithubUserByAccessToken(accessToken);
