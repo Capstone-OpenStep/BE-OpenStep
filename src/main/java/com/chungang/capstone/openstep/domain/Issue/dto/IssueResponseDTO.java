@@ -22,4 +22,20 @@ public class IssueResponseDTO {
         private List<String> labels;
     }
 
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class IssueDetailDTO {
+        private String title;
+        private String body;
+        private String url;
+        private String createdAt;
+        private String updatedAt;
+        private String author;
+        private List<String> labels;
+    }
+
+
 }

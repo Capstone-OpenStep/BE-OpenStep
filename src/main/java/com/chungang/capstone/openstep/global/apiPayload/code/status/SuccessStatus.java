@@ -25,7 +25,8 @@ public enum SuccessStatus implements BaseCode {
     REPO_GET_DETAIL_OK(HttpStatus.OK, "REPO_2002", "레포지토리 상세 정보를 성공적으로 조회하였습니다."),
 
     // 이슈 관련 응답
-    ISSUE_GET_TRENDING_OK(HttpStatus.OK, "ISSUE_3001", "트렌딩 이슈 리스트를 성공적으로 조회하였습니다.");
+    ISSUE_GET_TRENDING_OK(HttpStatus.OK, "ISSUE_3001", "트렌딩 이슈 리스트를 성공적으로 조회하였습니다."),
+    ISSUE_GET_DETAIL_OK(HttpStatus.OK, "ISSUE_3002", "이슈 상세 정보를 성공적으로 조회하였습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

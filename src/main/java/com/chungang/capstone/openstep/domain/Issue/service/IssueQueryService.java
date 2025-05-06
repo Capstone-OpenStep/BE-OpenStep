@@ -59,10 +59,12 @@ public class IssueQueryService {
     private Issue saveIfNotExists(GitHubIssueResponse.IssueNode node, Repo repo) {
         if (node.getTitle() == null || node.getTitle().length() < 1) return null;
 
-        String rawBody = node.getBody();
-        String body = (rawBody == null || rawBody.length() < 20 || !rawBody.matches(".*[가-힣a-zA-Z].*"))
-                ? "내용 없음"
-                : rawBody;
+//        String rawBody = node.getBody();
+//        String body = (rawBody == null || rawBody.length() < 20 || !rawBody.matches(".*[가-힣a-zA-Z].*"))
+//                ? "내용 없음"
+//                : rawBody;
+
+        String body = node.getBody();
 
         List<String> labels = node.getLabels() != null
                 ? node.getLabels().getNodes().stream().map(GitHubIssueResponse.LabelNode::getName).toList()
@@ -76,6 +78,23 @@ public class IssueQueryService {
         return issueRepository.findByGithubUrl(node.getUrl())
                 .orElseGet(() -> issueRepository.save(toIssueEntity(node, repo, body)));
     }
+
+//    private Issue saveIfNotExists(GitHubIssueResponse.IssueNode node, Repo repo) {
+//        if (node.getTitle() == null || node.getTitle().length() < 1) return null;
+//
+//        String rawBody = node.getBody(); // 그대로 저장
+//        List<String> labels = node.getLabels() != null
+//                ? node.getLabels().getNodes().stream().map(GitHubIssueResponse.LabelNode::getName).toList()
+//                : Collections.emptyList();
+//
+//        boolean isGoodLabel = labels.stream().anyMatch(label ->
+//                label.toLowerCase().contains("good first issue") || label.toLowerCase().contains("help wanted"));
+//
+//        if (!isGoodLabel) return null;
+//
+//        return issueRepository.findByGithubUrl(node.getUrl())
+//                .orElseGet(() -> issueRepository.save(toIssueEntity(node, repo, rawBody)));
+//    }
 
 
     private Issue toIssueEntity(GitHubIssueResponse.IssueNode node, Repo repo, String body) {
@@ -99,4 +118,5 @@ public class IssueQueryService {
         return issueRepository.findById(issueId)
                 .orElseThrow(() -> new IssueHandler(ErrorStatus.ISSUE_NOT_FOUND));
     }
+
 }
