@@ -30,6 +30,7 @@ public class IssueConverter {
                             : issue.getBody();
 
                     return IssueResponseDTO.TrendingIssueDTO.builder()
+                            .issueId(issue.getIssueId())
                             .title(issue.getTitle())
                             .body(filteredBody)
                             .summary(issue.getSummary())
@@ -46,6 +47,7 @@ public class IssueConverter {
 
     public static IssueResponseDTO.IssueDetailDTO toIssueDetailDTO(Issue issue) {
         return IssueResponseDTO.IssueDetailDTO.builder()
+                .issueId(issue.getIssueId())
                 .title(issue.getTitle())
                 .body(issue.getBody())
                 .summary(issue.getSummary())
