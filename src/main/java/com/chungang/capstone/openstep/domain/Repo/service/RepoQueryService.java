@@ -1,17 +1,15 @@
 package com.chungang.capstone.openstep.domain.Repo.service;
 
-import com.chungang.capstone.openstep.domain.Repo.dto.RepoResponseDTO;
-import com.chungang.capstone.openstep.domain.Repo.dto.GitHubRepoResponse;
-import com.chungang.capstone.openstep.domain.Repo.dto.GitHubRepoResponse.Node;
+import com.chungang.capstone.openstep.domain.Github.service.GitHubGraphQLService;
+import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse;
+import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse.Node;
 import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
 import com.chungang.capstone.openstep.domain.Repo.repository.RepoRepository;
-import com.chungang.capstone.openstep.domain.Repo.converter.RepoConverter;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
 import com.chungang.capstone.openstep.global.apiPayload.exception.handler.RepoHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;

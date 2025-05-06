@@ -27,16 +27,30 @@ public class Issue extends BaseEntity {
     @JoinColumn(name = "repo_id", nullable = false)
     private Repo repo;
 
+    @Column(columnDefinition = "varchar(500)", length = 500)
     private String title;
 
     @Column(columnDefinition = "TEXT")
     private String body;
 
+    @Column(unique = true)
     private String githubUrl;
 
     private String status; // OPEN, CLOSED 등
 
+    private String author;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "issue_labels", joinColumns = @JoinColumn(name = "issue_id"))
+    @Column(name = "label")
+    private List<String> labels = new ArrayList<>();
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasks = new ArrayList<>();
 }
+
 
