@@ -41,6 +41,9 @@ public class Repo extends BaseEntity {
 
     private String readmeUrl;
 
+    @Column(columnDefinition = "TEXT")
+    private String summary;
+
     private LocalDateTime lastGithubUpdate;
 
     @OneToMany(mappedBy = "repo", cascade = CascadeType.ALL, orphanRemoval = true)

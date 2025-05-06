@@ -3,6 +3,7 @@ package com.chungang.capstone.openstep.domain.Repo.service;
 import com.chungang.capstone.openstep.domain.Github.service.GitHubGraphQLService;
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse;
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse.Node;
+import com.chungang.capstone.openstep.domain.OpenAI.service.OpenAIService;
 import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
 import com.chungang.capstone.openstep.domain.Repo.repository.RepoRepository;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
@@ -20,6 +21,7 @@ public class RepoQueryService {
 
     private final RepoRepository repoRepository;
     private final GitHubGraphQLService gitHubGraphQLService;
+    private final OpenAIService openAIService;
 
     public List<Repo> getTrendingRepos() {
         GitHubRepoResponse gitHubRepoResponse = gitHubGraphQLService.fetchTrendingRepositories();
@@ -48,9 +50,15 @@ public class RepoQueryService {
     }
 
     private Repo toRepoEntity(Node node) {
+        String description = node.getDescription() != null ? node.getDescription() : "";
+        String readme = "README.md";
+        String summary = openAIService.summarizeRepo(description, readme);
+        String refinedSummary = openAIService.rewriteNaturalKorean(summary);
+
         return Repo.builder()
                 .repoName(node.getName())
                 .description(node.getDescription())
+                .summary(refinedSummary)
                 .language(node.getPrimaryLanguage() != null ? node.getPrimaryLanguage().getName() : null)
                 .stars(node.getStargazerCount())
                 .githubUrl(node.getUrl())

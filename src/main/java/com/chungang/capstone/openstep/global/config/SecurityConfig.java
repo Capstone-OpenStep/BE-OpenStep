@@ -40,10 +40,10 @@ public class SecurityConfig {
                                 .requestMatchers("/github/auth/**").permitAll()
 
                                 // Repo 관련 접근
-                                .requestMatchers("/repo/trending", "/repo/{repo-id}").permitAll()
+                                .requestMatchers("/repo/trending", "/repo/{repo-id}", "/summary/repo/{repo-id}").permitAll()
 
                                 // Issue 관련 접근
-                                .requestMatchers("/issues/trending", "/issues/{issue-id}").permitAll()
+                                .requestMatchers("/issues/trending", "/issues/{issue-id}", "/summary/issue/{issue-id}").permitAll()
 
                                 // 기타 관련 접근
                                 .requestMatchers("/example/**").permitAll()

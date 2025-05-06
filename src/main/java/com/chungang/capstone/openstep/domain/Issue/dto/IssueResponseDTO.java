@@ -15,6 +15,7 @@ public class IssueResponseDTO {
     public static class TrendingIssueDTO {
         private String title;
         private String body;
+        private String summary;
         private String url;
         private String createdAt;
         private String updatedAt;
@@ -30,6 +31,7 @@ public class IssueResponseDTO {
     public static class IssueDetailDTO {
         private String title;
         private String body;
+        private String summary;
         private String url;
         private String createdAt;
         private String updatedAt;

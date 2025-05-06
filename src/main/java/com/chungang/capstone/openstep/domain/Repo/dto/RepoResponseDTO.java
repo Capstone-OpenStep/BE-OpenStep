@@ -14,6 +14,7 @@ public class RepoResponseDTO {
     public static class TrendingRepoDTO {
         private Long repoId;
         private String repoName;
+        private String summary;
         private String ownerName;
         private String language;
         private Integer stars;
@@ -32,6 +33,7 @@ public class RepoResponseDTO {
     public static class RepoDetailDTO {
         private Long repoId;
         private String repoName;
+        private String summary;
         private String ownerName;
         private String description;
         private String language;

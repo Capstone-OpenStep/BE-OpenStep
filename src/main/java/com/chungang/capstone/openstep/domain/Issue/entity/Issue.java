@@ -40,6 +40,9 @@ public class Issue extends BaseEntity {
 
     private String author;
 
+    @Column(columnDefinition = "TEXT")
+    private String summary;
+
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "issue_labels", joinColumns = @JoinColumn(name = "issue_id"))
     @Column(name = "label")
