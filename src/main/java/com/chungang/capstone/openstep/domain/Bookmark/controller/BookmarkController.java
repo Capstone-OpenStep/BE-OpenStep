@@ -11,10 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,7 +25,7 @@ public class BookmarkController {
     private final BookmarkQueryService bookmarkQueryService;
 
     // 레포지토리 북마크 설정
-    @GetMapping("/add/{member-id}/{repo-id}")
+    @PostMapping("/add/{member-id}/{repo-id}")
     @Operation(summary = "레포지토리 북마크 설정 API", description = "특정 오픈소스 레포지토리를 북마크합니다.")
     public ApiResponse<BookmarkResponseDTO.CreateBookmarkResultDTO> createBookmark(@PathVariable("member-id") Long memberId, @PathVariable("repo-id") Long repoId) {
         Bookmark bookmark = bookmarkCommandService.createBookmark(memberId, repoId);
@@ -36,7 +33,7 @@ public class BookmarkController {
     }
 
     // 레포지토리 북마크 삭제
-    @GetMapping("/delete/{member-id}/{repo-id}")
+    @DeleteMapping("/delete/{member-id}/{repo-id}")
     @Operation(summary = "레포지토리 북마크 삭제 API", description = "특정 오픈소스 레포지토리의 북마크를 해제합니다.")
     public ApiResponse<BookmarkResponseDTO.DeleteBookmarkResultDTO> deleteBookmark(@PathVariable("member-id") Long memberId, @PathVariable("repo-id") Long repoId) {
         Long bookmarkId = bookmarkQueryService.findBookmarkIdByMemberAndRepo(memberId, repoId);
