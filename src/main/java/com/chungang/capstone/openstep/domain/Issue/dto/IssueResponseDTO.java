@@ -13,6 +13,7 @@ public class IssueResponseDTO {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class TrendingIssueDTO {
+        private Long issueId;
         private String title;
         private String body;
         private String summary;
@@ -29,6 +30,7 @@ public class IssueResponseDTO {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class IssueDetailDTO {
+        private Long issueId;
         private String title;
         private String body;
         private String summary;
