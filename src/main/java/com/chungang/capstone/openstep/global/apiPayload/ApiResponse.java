@@ -1,6 +1,7 @@
 package com.chungang.capstone.openstep.global.apiPayload;
 
 import com.chungang.capstone.openstep.global.apiPayload.code.BaseCode;
+import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.SuccessStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,6 +32,11 @@ public class ApiResponse<T> {
     // 실패한 경우 응답 생성
     public static <T> ApiResponse<T> onFailure(String code, String message, T data){
         return new ApiResponse<>(false, code, message, data);
+    }
+
+    //에러코드 기반 응답 생성
+    public static <T> ApiResponse<T> onFailure(ErrorStatus status){
+        return new ApiResponse<>(false, status.getCode(), status.getMessage(), null);
     }
 }
 
