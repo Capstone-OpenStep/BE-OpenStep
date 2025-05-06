@@ -39,11 +39,11 @@ public class IssueController {
     }
 
     // 특정 이슈 상세 조회
-//    @GetMapping("/{issue-id}")
-//    @Operation(summary = "특정 이슈 상세 조회 API", description = "특정 오픈소스 이슈의 상세 정보를 조회합니다.")
-//    public ApiResponse<IssueResponseDTO.IssueDetailDTO> getIssueDetail(@PathVariable("issue-id") Long issueId) {
-//        Issue issue = issueQueryService.getIssueById(issueId);
-//        return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_DETAIL_OK, IssueConverter.toIssueDetailDTO(issue));
-//    }
+    @GetMapping("/{issue-id}")
+    @Operation(summary = "특정 이슈 상세 조회 API", description = "특정 오픈소스 이슈의 상세 정보를 조회합니다.")
+    public ApiResponse<IssueResponseDTO.IssueDetailDTO> getIssueDetail(@PathVariable("issue-id") Long issueId) {
+        Issue issue = issueQueryService.getIssueById(issueId);
+        return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_DETAIL_OK, IssueConverter.toIssueDetailDTO(issue));
+    }
 
 }

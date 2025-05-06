@@ -9,18 +9,51 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class IssueConverter {
+//    public static List<IssueResponseDTO.TrendingIssueDTO> toTrendingDTOs(List<Issue> issues) {
+//        return issues.stream()
+//                .map(issue -> IssueResponseDTO.TrendingIssueDTO.builder()
+//                        .title(issue.getTitle())
+//                        .body(issue.getBody())
+//                        .url(issue.getGithubUrl())
+//                        .createdAt(issue.getCreatedAt() != null ? issue.getCreatedAt().toString() : null)
+//                        .updatedAt(issue.getUpdatedAt() != null ? issue.getUpdatedAt().toString() : null)
+//                        .author(issue.getAuthor())
+//                        .labels(issue.getLabels())
+//                        .build())
+//                .collect(Collectors.toList());
+//    }
     public static List<IssueResponseDTO.TrendingIssueDTO> toTrendingDTOs(List<Issue> issues) {
         return issues.stream()
-                .map(issue -> IssueResponseDTO.TrendingIssueDTO.builder()
-                        .title(issue.getTitle())
-                        .body(issue.getBody())
-                        .url(issue.getGithubUrl())
-                        .createdAt(issue.getCreatedAt() != null ? issue.getCreatedAt().toString() : null)
-                        .updatedAt(issue.getUpdatedAt() != null ? issue.getUpdatedAt().toString() : null)
-                        .author(issue.getAuthor())
-                        .labels(issue.getLabels())
-                        .build())
+                .map(issue -> {
+                    String filteredBody = (issue.getBody() == null || issue.getBody().length() < 200 || !issue.getBody().matches(".*[가-힣a-zA-Z].*"))
+                            ? "내용 없음"
+                            : issue.getBody();
+
+                    return IssueResponseDTO.TrendingIssueDTO.builder()
+                            .title(issue.getTitle())
+                            .body(filteredBody)
+                            .url(issue.getGithubUrl())
+                            .createdAt(issue.getCreatedAt() != null ? issue.getCreatedAt().toString() : null)
+                            .updatedAt(issue.getUpdatedAt() != null ? issue.getUpdatedAt().toString() : null)
+                            .author(issue.getAuthor())
+                            .labels(issue.getLabels())
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
+
+
+    public static IssueResponseDTO.IssueDetailDTO toIssueDetailDTO(Issue issue) {
+        return IssueResponseDTO.IssueDetailDTO.builder()
+                .title(issue.getTitle())
+                .body(issue.getBody())
+                .author(issue.getAuthor())
+                .createdAt(issue.getCreatedAt().toString())
+                .updatedAt(issue.getUpdatedAt().toString())
+                .labels(issue.getLabels())
+                .url(issue.getGithubUrl())
+                .build();
+    }
+
 
 }
