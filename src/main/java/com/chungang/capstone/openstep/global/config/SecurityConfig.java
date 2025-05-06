@@ -41,7 +41,7 @@ public class SecurityConfig {
 
                                 // Repo 관련 접근
                                 .requestMatchers("/repo/trending", "/repo/{repo-id}", "/summary/repo/{repo-id}").permitAll()
-                                .requestMatchers("/bookmark/add/{member-id}/{repo-id}", "/bookmark/delete/{member-id}/{repo-id}").permitAll()
+                                .requestMatchers("/bookmark/add/{member-id}/{repo-id}", "/bookmark/delete/{member-id}/{repo-id}", "/bookmark/list/{member-id}").permitAll()
 
                                 // Issue 관련 접근
                                 .requestMatchers("/issues/trending", "/issues/{issue-id}", "/summary/issue/{issue-id}").permitAll()

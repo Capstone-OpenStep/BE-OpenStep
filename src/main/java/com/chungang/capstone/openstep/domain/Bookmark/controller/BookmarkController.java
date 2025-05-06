@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/bookmark")
@@ -40,5 +42,13 @@ public class BookmarkController {
         Long bookmarkId = bookmarkQueryService.findBookmarkIdByMemberAndRepo(memberId, repoId);
         bookmarkCommandService.deleteBookmark(bookmarkId);
         return ApiResponse.onSuccess(SuccessStatus.REPO_DELETE_BOOKMARK_OK, BookmarkConverter.toDeleteBookmarkResultDTO(bookmarkId));
+    }
+
+    // 사용자가 북마크한 레포지토리 리스트 조회
+    @GetMapping("/list/{member-id}")
+    @Operation(summary = "사용자가 북마크한 레포지토리 리스트 조회 API", description = "특정 사용자가 북마크한 레포지토리 리스트를 조회합니다.")
+    public ApiResponse<BookmarkResponseDTO.BookmarkPreviewListDTO> getBookmarkList(@PathVariable("member-id") Long memberId) {
+        List<Bookmark> bookmarkList = bookmarkQueryService.getBookmarkList(memberId);
+        return ApiResponse.onSuccess(SuccessStatus.REPO_BOOKMARK_LIST_OK, BookmarkConverter.toBookmarkPreviewListDTO(bookmarkList));
     }
 }

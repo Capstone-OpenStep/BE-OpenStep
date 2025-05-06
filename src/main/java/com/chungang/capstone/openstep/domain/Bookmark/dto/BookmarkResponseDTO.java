@@ -1,11 +1,10 @@
 package com.chungang.capstone.openstep.domain.Bookmark.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 public class BookmarkResponseDTO {
 
@@ -28,5 +27,31 @@ public class BookmarkResponseDTO {
     @AllArgsConstructor
     public static class DeleteBookmarkResultDTO {
         Long bookmarkId;
+    }
+
+    @Builder
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BookmarkPreviewDTO {
+        private Long memberId;
+        private Long bookmarkId;
+        private Long repoId;
+        private String repoName;
+        private String language;
+        private Integer stars;
+        private Integer forks;
+        private String githubUrl;
+        private boolean isBookmarked;
+        private LocalDateTime createdAt;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BookmarkPreviewListDTO {
+        private List<BookmarkResponseDTO.BookmarkPreviewDTO> bookmarkList;
     }
 }
