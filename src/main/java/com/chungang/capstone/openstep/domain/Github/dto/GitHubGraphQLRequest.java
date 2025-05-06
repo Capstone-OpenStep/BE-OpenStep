@@ -1,4 +1,4 @@
-package com.chungang.capstone.openstep.domain.Repo.dto;
+package com.chungang.capstone.openstep.domain.Github.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

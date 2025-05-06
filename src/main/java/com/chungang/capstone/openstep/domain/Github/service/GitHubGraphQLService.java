@@ -1,7 +1,8 @@
-package com.chungang.capstone.openstep.domain.Repo.service;
+package com.chungang.capstone.openstep.domain.Github.service;
 
-import com.chungang.capstone.openstep.domain.Repo.dto.GitHubGraphQLRequest;
-import com.chungang.capstone.openstep.domain.Repo.dto.GitHubRepoResponse;
+import com.chungang.capstone.openstep.domain.Github.dto.GitHubGraphQLRequest;
+import com.chungang.capstone.openstep.domain.Github.dto.GitHubIssueResponse;
+import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,10 +22,11 @@ public class GitHubGraphQLService {
 
     private static final String GITHUB_GRAPHQL_URL = "https://api.github.com/graphql";
 
+    // Repo 정보 조회
     public GitHubRepoResponse fetchTrendingRepositories() {
         String query = """
         {
-          search(query: "stars:>10000 sort:stars-desc", type: REPOSITORY, first: 10) {
+          search(query: "stars:>10000 sort:stars-desc", type: REPOSITORY, first: 5) {
             edges {
               node {
                 ... on Repository {
@@ -59,7 +61,6 @@ public class GitHubGraphQLService {
         }
         """;
 
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(githubToken);
@@ -83,4 +84,46 @@ public class GitHubGraphQLService {
             return null;
         }
     }
+
+    // Issue 정보 조회
+    public GitHubIssueResponse fetchIssuesByRepo(String owner, String name) {
+        String query = String.format("""
+    {
+      repository(owner: "%s", name: "%s") {
+        name
+        issues(first: 10, orderBy: {field: UPDATED_AT, direction: DESC}) {
+          nodes {
+            title
+            body
+            url
+            createdAt
+            updatedAt
+            author { login }
+            labels(first: 10) {
+              nodes { name }
+            }
+          }
+        }
+      }
+    }
+    """, owner, name);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(githubToken);
+
+        HttpEntity<GitHubGraphQLRequest> request = new HttpEntity<>(new GitHubGraphQLRequest(query), headers);
+
+        try {
+            ResponseEntity<GitHubIssueResponse> response = restTemplate.exchange(
+                    GITHUB_GRAPHQL_URL, HttpMethod.POST, request, GitHubIssueResponse.class
+            );
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("GitHub 이슈 조회 실패: {} / {}", owner, name, e);
+            return null;
+        }
+    }
+
+
 }
