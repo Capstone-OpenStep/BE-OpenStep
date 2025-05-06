@@ -8,6 +8,7 @@ import com.chungang.capstone.openstep.domain.Issue.repository.IssueRepository;
 import com.chungang.capstone.openstep.domain.Issue.dto.IssueResponseDTO;
 import com.chungang.capstone.openstep.domain.Github.service.GitHubGraphQLService;
 import com.chungang.capstone.openstep.domain.Issue.converter.IssueConverter;
+import com.chungang.capstone.openstep.domain.OpenAI.service.OpenAIService;
 import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
 import com.chungang.capstone.openstep.domain.Repo.repository.RepoRepository;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
@@ -29,6 +30,7 @@ public class IssueQueryService {
     private final IssueRepository issueRepository;
     private final GitHubGraphQLService gitHubGraphQLService;
     private final RepoRepository repoRepository;
+    private final OpenAIService openAIService;
 
     public List<IssueResponseDTO.TrendingIssueDTO> getTrendingIssues() {
         List<Repo> repos = repoRepository.findAll(); // DB에 있는 5개 레포 사용
@@ -98,10 +100,14 @@ public class IssueQueryService {
 
 
     private Issue toIssueEntity(GitHubIssueResponse.IssueNode node, Repo repo, String body) {
+        String summary = openAIService.summarizeIssue(node.getTitle(), body);
+        String refinedSummary = openAIService.rewriteNaturalKorean(summary);
+
         return Issue.builder()
                 .repo(repo)
                 .title(node.getTitle())
                 .body(body)
+                .summary(refinedSummary)
                 .githubUrl(node.getUrl())
                 .author(node.getAuthor() != null ? node.getAuthor().getLogin() : "unknown")
                 .labels(node.getLabels() != null
