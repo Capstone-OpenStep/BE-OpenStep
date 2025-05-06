@@ -23,6 +23,9 @@ public enum ErrorStatus implements BaseErrorCode {
     //GITHUB AUTH 관련
     GITHUB_AUTH_ERROR(HttpStatus.UNAUTHORIZED, "AUTH_004", "깃허브 인증에 실패했습니다."),
 
+    //access token 관련
+    ACCESS_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AUTH_005", "Access Token이 없습니다."),
+
     // 회원 관련 에러 1000
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEMBER_1001", "사용자가 없습니다."),
     MEMBER_NAME_NOT_EXIST(HttpStatus.BAD_REQUEST, "MEMBER_1002", "이름입력은 필수 입니다."),

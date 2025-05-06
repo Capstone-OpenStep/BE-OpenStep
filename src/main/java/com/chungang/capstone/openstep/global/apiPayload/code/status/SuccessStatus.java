@@ -18,7 +18,11 @@ public enum SuccessStatus implements BaseCode {
     USER_REGISTER_OK(HttpStatus.OK, "AUTH2000", "회원 가입이 완료되었습니다."),
 
     // 유저 관련 응답
-    MEMBER_OK(HttpStatus.OK, "MEMBER_1000", "성공입니다."),
+    MEMBER_CREATE_OK(HttpStatus.OK, "MEMBER_1000", "멤버 생성에 성공하였습니다."),
+    MEMBER_GET_INTERESTS_OK(HttpStatus.OK, "MEMBER_1001", "유저 관심분야 조회에 성공하였습니다."),
+    MEMBER_GET_SKILLS_OK(HttpStatus.OK, "MEMBER_1002", "유저 기술스택 조회에 성공하였습니다."),
+    MEMBER_PATCH_INTERESTS_OK(HttpStatus.OK, "MEMBER_1003", "유저 관심분야 수정에 성공하였습니다."),
+    MEMBER_PATCH_SKILLS_OK(HttpStatus.OK, "MEMBER_1004", "유저 기술스택 수정에 성공하였습니다."),
 
     // 레포지토리 관련 응답
     REPO_GET_TRENDING_OK(HttpStatus.OK, "REPO_2001", "트렌딩 레포지토리 리스트를 성공적으로 조회하였습니다."),
