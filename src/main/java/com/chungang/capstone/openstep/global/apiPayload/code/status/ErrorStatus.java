@@ -30,6 +30,8 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 레포지토리 관련 에러 2000
     REPO_NOT_FOUND(HttpStatus.NOT_FOUND, "REPO_2001", "존재하지 않는 레포지토리입니다."),
+    REPO_BOOKMARK_DUPLICATE(HttpStatus.CONFLICT, "REPO_2002", "이미 북마크한 레포지토리입니다."),
+    REPO_BOOKMARK_NOT_FOUND(HttpStatus.NOT_FOUND, "REPO_2003", "북마크한 레포지토리가 아닙니다."),
 
     // 이슈 관련 에러 3000
     ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "ISSUE_3001", "존재하지 않는 이슈입니다.");

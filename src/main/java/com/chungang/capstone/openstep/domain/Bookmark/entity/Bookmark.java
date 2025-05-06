@@ -20,7 +20,7 @@ public class Bookmark extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "bookmark_id")
+    @Column(name = "bookmark_id", nullable = false, columnDefinition = "bigint")
     private Long bookmarkId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,4 +30,6 @@ public class Bookmark extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "repo_id", nullable = false)
     private Repo repo;
+
+
 }
