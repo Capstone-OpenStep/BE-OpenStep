@@ -37,13 +37,11 @@ public class Member extends BaseEntity {
 
     private int xp;
 
-    @ElementCollection
-    @CollectionTable(name = "member_skills", joinColumns = @JoinColumn(name = "member_id"))
-    private List<String> skills = new ArrayList<>();
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MemberSkill> skills = new ArrayList<>();
 
-    @ElementCollection
-    @CollectionTable(name = "member_interests", joinColumns = @JoinColumn(name = "member_id"))
-    private List<String> interests = new ArrayList<>();
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MemberDomain> domains = new ArrayList<>();
 
     private int projectExperience;
 
