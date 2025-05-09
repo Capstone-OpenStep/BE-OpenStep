@@ -44,6 +44,8 @@ public class GithubOauthService {
 			code
 		);
 
+
+
 		ResponseEntity<GithubOAuthDTO.GithubOauthRes> response = restTemplate.postForEntity(
 			"https://github.com/login/oauth/access_token",
 			githubOAuthReq,
@@ -52,8 +54,10 @@ public class GithubOauthService {
 		return Objects.requireNonNull(response.getBody()).access_token();
 	}
 	public GithubOAuthDTO.GithubUserInfoRes getGithubUserByAccessToken(String accessToken) {
-		HttpHeaders headers=new HttpHeaders();
+		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(accessToken);
+		headers.set("Accept", "application/json");
+
 		HttpEntity<Void> request=new HttpEntity<>(headers);
 		//access token을 이용해 사용자 정보를 요청하는 API 호출
 
