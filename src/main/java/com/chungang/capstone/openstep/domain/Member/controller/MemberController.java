@@ -33,7 +33,7 @@ public class MemberController {
 	private final MemberCommandService memberCommandService;
 
 	@Operation(summary = "관심사(domain) 조회 API", description = "사용자의 관심사(도메인)을 조회합니다.")
-	@GetMapping("/profile/domains")
+	@GetMapping("/domains")
 	public ApiResponse<MemberResponseDTO.DomainsRes> getDomains(){
 		Long memberId= SecurityUtils.getCurrentMemberId();
 		log.info("memberId={}",memberId);
@@ -42,7 +42,7 @@ public class MemberController {
 	}
 
 	@Operation(summary = "관심사(domain) 수정 API", description = "사용자의 관심사(도메인)내역을 수정합니다.")
-	@PatchMapping("/profile/domains")
+	@PatchMapping("/domains")
 	public ApiResponse<MemberResponseDTO.DomainsRes> updateDomains(@RequestBody MemberRequestDTO.UpdateDomainsReq domainsReq){
 		Long memberId= SecurityUtils.getCurrentMemberId();
 		log.info("memberId={}",memberId);
@@ -51,7 +51,7 @@ public class MemberController {
 	}
 
 	@Operation(summary = "기술스택 조회 API", description = "사용자의 기술스택 내역을 조회합니다.")
-	@GetMapping("/profile/skills")
+	@GetMapping("/skills")
 	public ApiResponse<MemberResponseDTO.SkillsRes> getSkills(){
 		Long memberId= SecurityUtils.getCurrentMemberId();
 		log.info("memberId={}",memberId);
@@ -60,7 +60,7 @@ public class MemberController {
 	}
 
 	@Operation(summary = "기술스택 수정 API", description = "사용자의 기술스택 내역을 수정합니다.")
-	@PatchMapping("/profile/skills")
+	@PatchMapping("/skills")
 	public ApiResponse<MemberResponseDTO.SkillsRes> updateSkills(@RequestBody MemberRequestDTO.UpdateSkillsReq skillsReq){
 		Long memberId= SecurityUtils.getCurrentMemberId();
 		log.info("memberId={}",memberId);
