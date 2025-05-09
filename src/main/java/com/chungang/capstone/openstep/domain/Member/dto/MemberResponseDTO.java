@@ -25,4 +25,9 @@ public class MemberResponseDTO {
 	public record SkillsRes(
 		List<String> skills
 	) {}
+
+	@Builder
+	public record Oauth2ResponseDTO(String redirectUrl) {}
+
+
 }
