@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.chungang.capstone.openstep.domain.Github.dto.PullRequestResponse;
+import com.chungang.capstone.openstep.domain.Github.service.GitHubGraphQLService;
 import com.chungang.capstone.openstep.domain.Member.dto.MemberRequestDTO;
 import com.chungang.capstone.openstep.domain.Member.dto.MemberResponseDTO;
 import com.chungang.capstone.openstep.domain.Member.service.MemberCommandService;
@@ -31,6 +33,7 @@ public class MemberController {
 
 	private final MemberQueryService memberQueryService;
 	private final MemberCommandService memberCommandService;
+	private final GitHubGraphQLService gitHubGraphQLService;
 
 	@Operation(summary = "관심사(domain) 조회 API", description = "사용자의 관심사(도메인)을 조회합니다.")
 	@GetMapping("/domains")
@@ -66,5 +69,14 @@ public class MemberController {
 		log.info("memberId={}",memberId);
 		MemberResponseDTO.SkillsRes skillsRes =memberCommandService.updateSkills(memberId,skillsReq);
 		return ApiResponse.onSuccess(SuccessStatus.MEMBER_PATCH_SKILLS_OK, skillsRes);
+	}
+
+	@Operation(summary = "기여내역 조회 API", description = "사용자의 기여내역을 조회합니다.")
+	@GetMapping("/contributions")
+	public ApiResponse<List<PullRequestResponse.PullRequestRes>> getContributions(){
+		String githubId=SecurityUtils.getCurrentMemberGithubId();
+		log.info("githubId={}",githubId);
+		List<PullRequestResponse.PullRequestRes> contributions = gitHubGraphQLService.fetchMyPullRequestsWithIssues(githubId);
+		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_DETAIL_OK, contributions);
 	}
 }
