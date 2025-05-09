@@ -1,8 +1,16 @@
 package com.chungang.capstone.openstep.domain.Github.service;
 
+import java.util.List;
+import java.util.Objects;
+
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubGraphQLRequest;
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubIssueResponse;
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse;
+import com.chungang.capstone.openstep.domain.Github.dto.PullRequestResponse;
+import com.chungang.capstone.openstep.domain.Github.dto.PullRequestResponseWrapper;
+import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
+import com.chungang.capstone.openstep.global.apiPayload.exception.GithubGraphQLException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -81,7 +89,7 @@ public class GitHubGraphQLService {
 
         } catch (Exception e) {
             log.error("GitHub GraphQL 호출 실패", e);
-            return null;
+            throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
         }
     }
 
@@ -121,9 +129,60 @@ public class GitHubGraphQLService {
             return response.getBody();
         } catch (Exception e) {
             log.error("GitHub 이슈 조회 실패: {} / {}", owner, name, e);
-            return null;
+            throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
         }
     }
 
+    // 내 PR 및 연결된 이슈 정보 조회
+    public List<PullRequestResponse.PullRequestRes> fetchMyPullRequestsWithIssues(String githubId) {
+        String query = String.format("""
+        {
+          user(login: "%s") {
+            pullRequests(first: 100, orderBy: {field: UPDATED_AT, direction: DESC}) {
+              nodes {
+                title
+                url
+                createdAt
+                mergedAt
+                repository {
+                  nameWithOwner
+                }
+                closingIssuesReferences(first: 5) {
+                  nodes {
+                    number
+                    title
+                    url
+                    createdAt
+                    author {
+                      login
+                    }
+                    labels(first: 10) {
+                      nodes {
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """, githubId);
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(githubToken);
+
+        HttpEntity<GitHubGraphQLRequest> request = new HttpEntity<>(new GitHubGraphQLRequest(query), headers);
+
+        try {
+            ResponseEntity<PullRequestResponseWrapper> response = restTemplate.exchange(
+                GITHUB_GRAPHQL_URL, HttpMethod.POST, request, PullRequestResponseWrapper.class
+            );
+            return Objects.requireNonNull(response.getBody()).pullRequests();
+        } catch (Exception e) {
+            log.error("GitHub 내 PR 조회 실패: {}", githubId, e);
+            throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
+        }
+    }
 }
