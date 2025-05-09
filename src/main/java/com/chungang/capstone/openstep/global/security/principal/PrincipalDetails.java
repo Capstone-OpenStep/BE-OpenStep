@@ -35,6 +35,10 @@ public class PrincipalDetails implements UserDetails {
         return member.getMemberId().toString();
     }
 
+    public String getGithubId() {
+        return member.getGithubId();
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;
@@ -54,4 +58,5 @@ public class PrincipalDetails implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }
