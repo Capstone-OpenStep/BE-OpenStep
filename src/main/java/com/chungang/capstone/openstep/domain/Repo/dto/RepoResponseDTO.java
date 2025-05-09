@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 public class RepoResponseDTO {
 
     @Getter
@@ -45,4 +47,13 @@ public class RepoResponseDTO {
         private String githubUrl;
         private String readmeUrl;
     }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class RepoListDTO {
+        private List<TrendingRepoDTO> repoList;
+    }
+
 }

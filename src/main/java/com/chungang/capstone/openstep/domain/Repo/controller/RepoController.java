@@ -21,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,5 +47,17 @@ public class RepoController {
         return ApiResponse.onSuccess(SuccessStatus.REPO_GET_DETAIL_OK, RepoConverter.toRepoDetailDTO(repo));
     }
 
+    // 이름으로 레포지토리 검색
+    @GetMapping("/search/name")
+    @Operation(summary = "레포지토리 이름 검색 API", description = "입력한 키워드로 오픈소스 레포지토리를 검색합니다. 결과는 최대 10개까지 반환됩니다.")
+    public ApiResponse<RepoResponseDTO.RepoListDTO> searchReposByName(
+            @RequestParam Optional<String> search) {
+
+        List<Repo> repos = repoQueryService.getReposByName(Optional.of(search.orElse("")));
+        return ApiResponse.onSuccess(SuccessStatus.REPO_GET_LIST_BY_NAME_OK, RepoConverter.toRepoListDTO(repos));
+    }
+
+
 }
+
 

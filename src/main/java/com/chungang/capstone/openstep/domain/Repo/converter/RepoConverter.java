@@ -44,4 +44,11 @@ public class RepoConverter {
                 .readmeUrl(repo.getReadmeUrl())
                 .build();
     }
+
+    public static RepoResponseDTO.RepoListDTO toRepoListDTO(List<Repo> repos) {
+        return RepoResponseDTO.RepoListDTO.builder()
+                .repoList(toTrendingDTOs(repos))
+                .build();
+    }
+
 }

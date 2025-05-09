@@ -10,5 +10,10 @@ public interface RepoRepository extends JpaRepository<Repo, Long> {
     List<Repo> findTop10ByOrderByStarsDesc();
     Optional<Repo> findByGithubUrl(String githubUrl);
     Optional<Repo> findByRepoName(String name);
+
+    List<Repo> findTop10ByRepoNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrderByStarsDesc(
+            String nameKeyword, String descKeyword
+    );
+
 }
 
