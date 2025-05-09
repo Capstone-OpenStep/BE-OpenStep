@@ -19,13 +19,22 @@ public class PullRequestResponse {
 		String createdAt,
 		Author author,
 		LabelWrapper labels
-	) { }
+	) {
+		public List<String> flatLabelNames() {
+			if (labels == null || labels.nodes() == null) return List.of();
+			return labels.nodes().stream()
+				.map(LabelNode::name)
+				.toList();
+		}
+	}
 	record Author(String login) {}
 	record LabelWrapper(
 		List<LabelNode> nodes
 	) {}
+
 	record LabelNode(String name) {}
 	record Repository(String nameWithOwner) {}
 	record ClosingIssueWrapper(List<RelatedIssueDto> nodes) {}
+
 }
 

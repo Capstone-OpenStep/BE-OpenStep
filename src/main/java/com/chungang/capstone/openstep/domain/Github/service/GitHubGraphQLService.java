@@ -138,7 +138,7 @@ public class GitHubGraphQLService {
         String query = String.format("""
         {
           user(login: "%s") {
-            pullRequests(first: 30, orderBy: {field: UPDATED_AT, direction: DESC}) {
+            pullRequests(first: 100, orderBy: {field: UPDATED_AT, direction: DESC}) {
               nodes {
                 title
                 url
