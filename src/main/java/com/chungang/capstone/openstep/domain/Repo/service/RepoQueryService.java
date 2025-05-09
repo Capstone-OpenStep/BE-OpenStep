@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -77,4 +78,16 @@ public class RepoQueryService {
         return repoRepository.findById(repoId)
                 .orElseThrow(() -> new RepoHandler(ErrorStatus.REPO_NOT_FOUND));
     }
+
+
+    // 레포지토리 이름으로 검색
+    public List<Repo> getReposByName(Optional<String> keyword) {
+        String searchKeyword = keyword.orElse("").trim();
+
+        if (searchKeyword.isEmpty()) { return repoRepository.findTop10ByOrderByStarsDesc();}
+        return repoRepository.findTop10ByRepoNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrderByStarsDesc(
+                searchKeyword, searchKeyword
+        );
+    }
+
 }

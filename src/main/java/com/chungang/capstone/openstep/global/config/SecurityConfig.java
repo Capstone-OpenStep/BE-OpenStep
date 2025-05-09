@@ -30,6 +30,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                //.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -42,6 +43,7 @@ public class SecurityConfig {
                                 // Repo 관련 접근
                                 .requestMatchers("/repo/trending", "/repo/{repo-id}", "/summary/repo/{repo-id}").permitAll()
                                 .requestMatchers("/bookmark/add/{member-id}/{repo-id}", "/bookmark/delete/{member-id}/{repo-id}", "/bookmark/list/{member-id}").permitAll()
+                                .requestMatchers("/repo/search/name").permitAll()
 
                                 // Issue 관련 접근
                                 .requestMatchers("/issues/trending", "/issues/{issue-id}", "/summary/issue/{issue-id}").permitAll()
@@ -61,8 +63,9 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOriginPatterns(List.of("*", "http://localhost:3000"));
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        //config.setAllowedOriginPatterns(List.of("*", "http://localhost:3000"));
+        config.setAllowedOriginPatterns(List.of("*"));
+        //config.setAllowedOrigins(List.of("http://localhost:3000"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("*"));
