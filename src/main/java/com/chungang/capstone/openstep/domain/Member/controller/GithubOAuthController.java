@@ -1,9 +1,7 @@
 package com.chungang.capstone.openstep.domain.Member.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.web.bind.annotation.*;
 
 import com.chungang.capstone.openstep.domain.Member.converter.MemberConverter;
 import com.chungang.capstone.openstep.domain.Member.dto.GithubOAuthDTO;
@@ -39,6 +37,13 @@ public class GithubOAuthController {
 		} catch (NullPointerException e) {
 			throw new AuthException(ErrorStatus.GITHUB_AUTH_ERROR);
 		}
+	}
+
+	@PostMapping("/login/github_url")
+	@Operation(summary = "깃허브 로그인 url 요청")
+	public ApiResponse<MemberResponseDTO.Oauth2ResponseDTO> githubLogin(@RequestParam("redirect_uri") String redirectUri) {
+		String url = githubOauthService.getGithubRedirectUrl(redirectUri);
+		return ApiResponse.onSuccess(SuccessStatus.USER_GITHUB_LOGIN_OK, new MemberResponseDTO.Oauth2ResponseDTO(url));
 	}
 
 }
