@@ -8,6 +8,8 @@ import com.chungang.capstone.openstep.domain.Github.dto.GitHubIssueResponse;
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse;
 import com.chungang.capstone.openstep.domain.Github.dto.PullRequestResponse;
 import com.chungang.capstone.openstep.domain.Github.dto.PullRequestResponseWrapper;
+import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
+import com.chungang.capstone.openstep.global.apiPayload.exception.GithubGraphQLException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -87,7 +89,7 @@ public class GitHubGraphQLService {
 
         } catch (Exception e) {
             log.error("GitHub GraphQL 호출 실패", e);
-            return null;
+            throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
         }
     }
 
@@ -127,7 +129,7 @@ public class GitHubGraphQLService {
             return response.getBody();
         } catch (Exception e) {
             log.error("GitHub 이슈 조회 실패: {} / {}", owner, name, e);
-            return null;
+            throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
         }
     }
 
@@ -180,7 +182,7 @@ public class GitHubGraphQLService {
             return Objects.requireNonNull(response.getBody()).pullRequests();
         } catch (Exception e) {
             log.error("GitHub 내 PR 조회 실패: {}", githubId, e);
-            return null;
+            throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
         }
     }
 }

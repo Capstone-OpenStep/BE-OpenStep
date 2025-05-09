@@ -15,6 +15,9 @@ public enum ErrorStatus implements BaseErrorCode {
     _UNAUTHORIZED(HttpStatus.UNAUTHORIZED,"COMMON401","인증이 필요합니다."),
     _FORBIDDEN(HttpStatus.FORBIDDEN, "COMMON403", "금지된 요청입니다."),
 
+    //GITHUB GRAPHQL 관련
+    GITHUB_GRAPHQL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "GRAPHQL_001", "서버측에서 깃허브 GraphQL API 호출에 실패했습니다."),
+
     // Auth 관련
     AUTH_EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_001", "토큰이 만료되었습니다."),
     AUTH_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_002", "토큰이 유효하지 않습니다."),
