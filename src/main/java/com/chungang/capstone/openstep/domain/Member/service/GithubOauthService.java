@@ -43,8 +43,9 @@ public class GithubOauthService {
 			clientSecret,
 			code
 		);
-
-
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Accept", "application/json");
+		HttpEntity<GithubOAuthDTO.GithubOAuthReq> request = new HttpEntity<>(githubOAuthReq, headers);
 
 		ResponseEntity<GithubOAuthDTO.GithubOauthRes> response = restTemplate.postForEntity(
 			"https://github.com/login/oauth/access_token",
