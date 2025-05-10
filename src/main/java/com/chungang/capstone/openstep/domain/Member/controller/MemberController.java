@@ -62,36 +62,36 @@ public class MemberController {
 	}
 
 
-	@Operation(summary = "관심사(domain) 조회 API", description = "사용자의 관심사(도메인)을 조회합니다.")
+	@Operation(summary = "관심분야(domains) 조회 API", description = "사용자의 관심분야을 조회합니다.")
 	@GetMapping("/domains")
-	public ApiResponse<MemberResponseDTO.DomainsRes> getDomains(){
+	public ApiResponse<MemberResponseDTO.DomainsRes> getMemberDomains(){
 		Long memberId= SecurityUtils.getCurrentMemberId();
 		log.info("memberId={}",memberId);
 		MemberResponseDTO.DomainsRes domainsRes =memberQueryService.getDomains(memberId);
 		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_INTERESTS_OK, domainsRes);
 	}
 
-	@Operation(summary = "관심사(domain) 수정 API", description = "사용자의 관심사(도메인)내역을 수정합니다.")
-	@PatchMapping("/domains")
-	public ApiResponse<MemberResponseDTO.DomainsRes> updateDomains(@RequestBody MemberRequestDTO.UpdateDomainsReq domainsReq){
+	@Operation(summary = "관심분야(domains) 선택 API", description = "사용자가 관심있는 분야를 선택합니다.")
+	@PatchMapping("/interest/domains")
+	public ApiResponse<MemberResponseDTO.DomainsRes> selectDomains(@RequestBody MemberRequestDTO.UpdateDomainsReq domainsReq){
 		Long memberId= SecurityUtils.getCurrentMemberId();
 		log.info("memberId={}",memberId);
 		MemberResponseDTO.DomainsRes domainsRes =memberCommandService.updateDomains(memberId,domainsReq);
 		return ApiResponse.onSuccess(SuccessStatus.MEMBER_PATCH_INTERESTS_OK, domainsRes);
 	}
 
-	@Operation(summary = "기술스택 조회 API", description = "사용자의 기술스택 내역을 조회합니다.")
-	@GetMapping("/skills")
-	public ApiResponse<MemberResponseDTO.SkillsRes> getSkills(){
+	@Operation(summary = "관심언어(languages) 조회 API", description = "사용자의 관심언어를 조회합니다.")
+	@GetMapping("/languages")
+	public ApiResponse<MemberResponseDTO.SkillsRes> getMemberLanguages(){
 		Long memberId= SecurityUtils.getCurrentMemberId();
 		log.info("memberId={}",memberId);
 		MemberResponseDTO.SkillsRes skillRes =memberQueryService.getSkills(memberId);
 		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_SKILLS_OK, skillRes);
 	}
 
-	@Operation(summary = "기술스택 수정 API", description = "사용자의 기술스택 내역을 수정합니다.")
-	@PatchMapping("/skills")
-	public ApiResponse<MemberResponseDTO.SkillsRes> updateSkills(@RequestBody MemberRequestDTO.UpdateSkillsReq skillsReq){
+	@Operation(summary = "관심언어(languages) 선택 API", description = "사용자의 기술스택 내역을 수정합니다.")
+	@PatchMapping("/interest/languages")
+	public ApiResponse<MemberResponseDTO.SkillsRes> selectLanguages(@RequestBody MemberRequestDTO.UpdateSkillsReq skillsReq){
 		Long memberId= SecurityUtils.getCurrentMemberId();
 		log.info("memberId={}",memberId);
 		MemberResponseDTO.SkillsRes skillsRes =memberCommandService.updateSkills(memberId,skillsReq);

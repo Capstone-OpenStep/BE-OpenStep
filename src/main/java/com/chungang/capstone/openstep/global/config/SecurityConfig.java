@@ -43,6 +43,8 @@ public class SecurityConfig {
                                 // Member 관련 접근
                                 .requestMatchers("/member/register", "/member/login/kakao", "/member/login/naver", "/member/login/email","/member/refresh").permitAll()
                                 .requestMatchers("/member/sign_up", "/member/login", "/member/logout", "/member/refresh").permitAll()
+                                .requestMatchers("/member/interest/domains", "/member/domains", "/member/interest/languages", "/member/languages").permitAll()
+                                .requestMatchers("/member/contributions").permitAll()
                                 .requestMatchers("/github/auth/**").permitAll()
 
                                 // Repo 관련 접근

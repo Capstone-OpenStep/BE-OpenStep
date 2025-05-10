@@ -3,7 +3,7 @@ package com.chungang.capstone.openstep.domain.common;
 import lombok.Getter;
 
 @Getter
-public enum InterestField {
+public enum InterestDomain {
 
     FRONTEND("Frontend"),
     BACKEND("Backend"),
@@ -28,7 +28,7 @@ public enum InterestField {
 
     private final String label;
 
-    InterestField(String label) {
+    InterestDomain(String label) {
         this.label = label;
     }
 }
