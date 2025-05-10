@@ -24,10 +24,10 @@ import lombok.RequiredArgsConstructor;
 public class GithubOauthService {
 
 	@Value("${github.client-id}")
-	private String clientId;
+	private String githubClientId;
 
 	@Value("${github.client-secret}")
-	private String clientSecret;
+	private String githubClientSecret;
 
 	private final JwtTokenProvider jwtTokenProvider;
 
@@ -39,8 +39,8 @@ public class GithubOauthService {
 		//code를 이용해 access token을 요청하는 API 호출
 		//post를 통해 access token을 요청
 		GithubOAuthDTO.GithubOAuthReq githubOAuthReq = new GithubOAuthDTO.GithubOAuthReq(
-			clientId,
-			clientSecret,
+			githubClientId,
+			githubClientSecret,
 			code
 		);
 		HttpHeaders headers = new HttpHeaders();
@@ -90,4 +90,14 @@ public class GithubOauthService {
 			.accessToken(accessToken)
 			.build();
 	}
+
+	// 깃허브 로그인
+	public String getGithubRedirectUrl(String githubRedirectUrl) {
+		String path = "https://github.com/login/oauth/authorize";
+		String clientId = "?client_id=" + githubClientId;
+		String redirectUrl = "&redirect_url=" + githubRedirectUrl;
+
+		return path + clientId + redirectUrl;
+	}
+
 }
