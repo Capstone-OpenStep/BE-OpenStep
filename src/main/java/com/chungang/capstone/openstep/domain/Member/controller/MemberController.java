@@ -2,12 +2,9 @@ package com.chungang.capstone.openstep.domain.Member.controller;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.chungang.capstone.openstep.domain.Member.service.AuthService;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
 
 import com.chungang.capstone.openstep.domain.Github.dto.PullRequestResponse;
 import com.chungang.capstone.openstep.domain.Github.service.GitHubGraphQLService;
@@ -31,9 +28,39 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MemberController {
 
+	private final AuthService authService;
 	private final MemberQueryService memberQueryService;
 	private final MemberCommandService memberCommandService;
 	private final GitHubGraphQLService gitHubGraphQLService;
+
+	@PostMapping("/sign_up")
+	@Operation(summary = "회원가입", description = "회원가입을 진행합니다.")
+	public ApiResponse<String> signUp(@Valid @RequestBody MemberRequestDTO.MemberSignUpRequestDTO request) {
+		String response = authService.signUp(request);
+		return ApiResponse.onSuccess(SuccessStatus.MEMBER_SIGN_UP_OK, response);
+	}
+
+	@PostMapping("/login")
+	@Operation(summary = "로그인", description = "로그인을 진행합니다.")
+	public ApiResponse<MemberResponseDTO.MemberTokenResponseDTO> login(@Valid @RequestBody MemberRequestDTO.MemberLoginRequestDTO request) {
+		MemberResponseDTO.MemberTokenResponseDTO response = authService.login(request);
+		return ApiResponse.onSuccess(SuccessStatus.MEMBER_LOGIN_OK, response);
+	}
+
+	@PostMapping("/logout")
+	@Operation(summary = "로그아웃")
+	public ApiResponse<String> logout(@Valid @RequestBody MemberRequestDTO.refreshRequestDTO request) {
+		String response = authService.logout(request);
+		return ApiResponse.onSuccess(SuccessStatus.MEMBER_LOGOUT_OK, response);
+	}
+
+	@PostMapping("/refresh")
+	@Operation(summary = "액세스 토큰 재할당")
+	public ApiResponse<MemberResponseDTO.TokenRefreshResponseDTO> refresh(@Valid @RequestBody MemberRequestDTO.refreshRequestDTO request) {
+		MemberResponseDTO.TokenRefreshResponseDTO response = authService.refresh(request);
+		return ApiResponse.onSuccess(SuccessStatus.MEMBER_UPDATE_ACCESS_TOKEN_OK, response);
+	}
+
 
 	@Operation(summary = "관심사(domain) 조회 API", description = "사용자의 관심사(도메인)을 조회합니다.")
 	@GetMapping("/domains")

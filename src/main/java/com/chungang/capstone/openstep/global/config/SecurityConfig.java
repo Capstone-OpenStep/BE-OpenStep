@@ -1,12 +1,14 @@
 package com.chungang.capstone.openstep.global.config;
 
 
+import com.chungang.capstone.openstep.global.security.filter.EmailPasswordAuthenticationFilter;
 import com.chungang.capstone.openstep.global.security.filter.JwtRequestFilter;
 import com.chungang.capstone.openstep.global.security.principal.PrincipalDetailsService;
 import com.chungang.capstone.openstep.global.security.provider.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -29,6 +31,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .httpBasic(httpBasic -> httpBasic.disable())
@@ -38,6 +42,7 @@ public class SecurityConfig {
                         authorize -> authorize
                                 // Member 관련 접근
                                 .requestMatchers("/member/register", "/member/login/kakao", "/member/login/naver", "/member/login/email","/member/refresh").permitAll()
+                                .requestMatchers("/member/sign_up", "/member/login", "/member/logout", "/member/refresh").permitAll()
                                 .requestMatchers("/github/auth/**").permitAll()
 
                                 // Repo 관련 접근
@@ -53,7 +58,9 @@ public class SecurityConfig {
                                 .requestMatchers("/", "/api-docs/**", "/api-docs/swagger-config/*", "/swagger-ui/*", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                                 .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtRequestFilter(jwtTokenProvider, principalDetailsService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new EmailPasswordAuthenticationFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtRequestFilter(jwtTokenProvider, principalDetailsService), EmailPasswordAuthenticationFilter.class)
+
 
                 .build();
     }

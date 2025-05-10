@@ -2,6 +2,7 @@ package com.chungang.capstone.openstep.domain.Member.converter;
 
 import java.util.List;
 
+import com.chungang.capstone.openstep.domain.Member.dto.MemberRequestDTO;
 import com.chungang.capstone.openstep.domain.Member.dto.MemberResponseDTO;
 import com.chungang.capstone.openstep.domain.Member.entity.Member;
 
@@ -26,4 +27,16 @@ public class MemberConverter {
 			.skills(skills)
 			.build();
 	}
+
+	// 이메일 회원가입용
+	public static Member toMember(MemberRequestDTO.MemberSignUpRequestDTO request, String password) {
+		Member member = Member.builder()
+				.email(request.email())
+				.password(password)
+				.nickname(request.nickname())
+				.githubId(request.githubId())
+				.build();
+		return member;
+	}
+
 }

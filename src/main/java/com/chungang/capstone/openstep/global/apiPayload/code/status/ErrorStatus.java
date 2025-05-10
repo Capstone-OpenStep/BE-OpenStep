@@ -22,6 +22,13 @@ public enum ErrorStatus implements BaseErrorCode {
     AUTH_EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_001", "토큰이 만료되었습니다."),
     AUTH_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_002", "토큰이 유효하지 않습니다."),
     INVALID_LOGIN_REQUEST(HttpStatus.UNAUTHORIZED, "AUTH_003", "올바른 아이디나 패스워드가 아닙니다."),
+    MEMBER_WRONG_EMAIL(HttpStatus.UNAUTHORIZED, "AUTH_004", "이메일이 잘못되었습니다."),
+    MEMBER_WRONG_PASSWORD(HttpStatus.UNAUTHORIZED, "AUTH_005", "비밀번호가 잘못되었습니다."),
+    MEMBER_EMAIL_ALREADY_EXISTS(HttpStatus.UNAUTHORIZED, "AUTH_006", "이미 존재하는 이메일입니다."),
+    MEMBER_NICKNAME_ALREADY_EXISTS(HttpStatus.UNAUTHORIZED, "AUTH_007", "이미 존재하는 닉네임입니다."),
+    MEMBER_LOGIN_FAIL(HttpStatus.UNAUTHORIZED, "AUTH_008", "로그인에 실패했습니다."),
+    MEMBER_ALREADY_LOGGED_OUT(HttpStatus.UNAUTHORIZED, "AUTH_009", "이미 로그아웃된 계정입니다."),
+    MEMBER_WRONG_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_010", "잘못된 토큰입니다."),
 
     //GITHUB AUTH 관련
     GITHUB_AUTH_ERROR(HttpStatus.UNAUTHORIZED, "AUTH_004", "깃허브 인증에 실패했습니다."),
