@@ -19,11 +19,19 @@ public class PrincipalDetailsService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
 
-    @Override
-    public UserDetails loadUserByUsername(String memberId) throws UsernameNotFoundException {
-        Member member = memberRepository.findById(Long.parseLong(memberId))
-                .orElseThrow(() -> new AuthException(ErrorStatus.MEMBER_NOT_FOUND));
+//    @Override
+//    public UserDetails loadUserByUsername(String memberId) throws UsernameNotFoundException {
+//        Member member = memberRepository.findById(Long.parseLong(memberId))
+//                .orElseThrow(() -> new AuthException(ErrorStatus.MEMBER_NOT_FOUND));
+//
+//        return new PrincipalDetails(member);
+//    }
 
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new AuthException(ErrorStatus.MEMBER_NOT_FOUND));
         return new PrincipalDetails(member);
     }
+
 }

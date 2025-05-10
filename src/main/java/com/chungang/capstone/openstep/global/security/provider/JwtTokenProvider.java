@@ -6,6 +6,8 @@ import io.jsonwebtoken.security.Keys;
 import com.chungang.capstone.openstep.global.apiPayload.exception.AuthException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.View;
 
@@ -13,11 +15,14 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class JwtTokenProvider {
 
+    private static final String AUTHORITIES_KEY = "auth";
+    private static final String BEARER_TYPE = "Bearer";
     private final SecretKey secretKey;
     private final Long accessTokenValidityMilliseconds;
     private final Long refreshTokenValidityMilliseconds;
@@ -78,5 +83,88 @@ public class JwtTokenProvider {
 
     private Jws<Claims> getClaims(String token) {
         return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+    }
+
+    // token 생성
+    public TokenInfo generateToken(Authentication authentication) {
+        // 권한 가져오기
+        String authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+        // 현재 시간
+        long now = (new Date()).getTime();
+
+        // Access Token 생성
+        Date accessTokenExpiresIn = new Date(now + accessTokenValidityMilliseconds);
+        String accessToken = Jwts.builder()
+                .setSubject(authentication.getName())
+                .claim(AUTHORITIES_KEY, authorities)
+                .setExpiration(accessTokenExpiresIn)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+
+        // Refresh Token 생성
+        String refreshToken = Jwts.builder()
+                .setSubject(authentication.getName())
+                .setExpiration(new Date(now + refreshTokenValidityMilliseconds))
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+
+        return TokenInfo.builder()
+                .grantType(BEARER_TYPE)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .refreshTokenExpirationTime(new Date(now + refreshTokenValidityMilliseconds))
+                .build();
+    }
+
+    // 토큰 정보를 검증
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+            return true;
+        } catch (SecurityException | MalformedJwtException e) {
+            log.info("Invalid JWT Token", e);
+        } catch (ExpiredJwtException e) {
+            log.info("Expired JWT Token", e);
+        } catch (UnsupportedJwtException e) {
+            log.info("Unsupported JWT Token", e);
+        } catch (IllegalArgumentException e) {
+            log.info("JWT claims string is empty.", e);
+        } catch (Exception e) {
+            System.out.println("잘못된 토큰 값입니다.");
+        }
+        return false;
+    }
+
+    public Date getExpirationTimeFromToken(String token) {
+        Claims claims = parseClaims(token);
+        return claims.getExpiration();
+    }
+
+    private Claims parseClaims(String accessToken) {
+        try {
+            return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(accessToken).getBody();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        }
+    }
+
+    public String getUserEmailFromToken(String token) {
+        Claims claims = parseClaims(token);
+        return claims.getSubject();
+    }
+
+    public String createAccessTokenByEmail(String email) {
+        long now = (new Date()).getTime();
+
+        String accessToken = Jwts.builder()
+                .setSubject(email)
+                .claim(AUTHORITIES_KEY, "ROLE_USER")
+                .setExpiration(new Date(now + accessTokenValidityMilliseconds))
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+
+        return accessToken;
     }
 }

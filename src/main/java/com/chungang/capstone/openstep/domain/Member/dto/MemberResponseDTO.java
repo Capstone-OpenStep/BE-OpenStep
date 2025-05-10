@@ -2,6 +2,7 @@ package com.chungang.capstone.openstep.domain.Member.dto;
 
 import java.util.List;
 
+import com.chungang.capstone.openstep.global.security.provider.TokenInfo;
 import com.fasterxml.classmate.AnnotationOverrides;
 
 import lombok.Builder;
@@ -29,5 +30,21 @@ public class MemberResponseDTO {
 	@Builder
 	public record Oauth2ResponseDTO(String redirectUrl) {}
 
+	@Builder
+	public record MemberTokenResponseDTO (
+			TokenInfo tokenInfo,
+			String email,
+			String nickname,
+			String githubId,
+			Long memberId) {
+	}
+
+	@Builder
+	public record TokenRefreshResponseDTO(
+			String accessToken,
+			String email,
+			String nickname,
+			String githubId,
+			Long memberId) {}
 
 }
