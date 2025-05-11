@@ -1,5 +1,6 @@
 package com.chungang.capstone.openstep.domain.common;
 
+import java.util.Arrays;
 import lombok.Getter;
 
 @Getter
@@ -29,4 +30,14 @@ public enum InterestLanguage {
     InterestLanguage(String label) {
         this.label = label;
     }
+
+    public static InterestLanguage fromLabel(String label) {
+        return Arrays.stream(InterestLanguage.values())
+                .filter(lang -> lang.getLabel().equalsIgnoreCase(label))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 언어: " + label));
+    }
+
+
+
 }

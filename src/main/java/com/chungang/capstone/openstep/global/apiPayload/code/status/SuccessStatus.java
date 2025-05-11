@@ -19,10 +19,10 @@ public enum SuccessStatus implements BaseCode {
 
     // 유저 관련 응답
     MEMBER_CREATE_OK(HttpStatus.OK, "MEMBER_1000", "멤버 생성에 성공하였습니다."),
-    MEMBER_GET_INTERESTS_OK(HttpStatus.OK, "MEMBER_1001", "유저 관심분야 조회에 성공하였습니다."),
-    MEMBER_GET_SKILLS_OK(HttpStatus.OK, "MEMBER_1002", "유저 기술스택 조회에 성공하였습니다."),
-    MEMBER_PATCH_INTERESTS_OK(HttpStatus.OK, "MEMBER_1003", "유저 관심분야 수정에 성공하였습니다."),
-    MEMBER_PATCH_SKILLS_OK(HttpStatus.OK, "MEMBER_1004", "유저 기술스택 수정에 성공하였습니다."),
+    MEMBER_GET_INTEREST_DOMAINS_OK(HttpStatus.OK, "MEMBER_1001", "유저 관심분야 조회에 성공하였습니다."),
+    MEMBER_GET_INTEREST_LANGUAGES_OK(HttpStatus.OK, "MEMBER_1002", "유저 관심언어 조회에 성공하였습니다."),
+    MEMBER_SELECT_INTEREST_DOMAINS_OK(HttpStatus.OK, "MEMBER_1003", "유저 관심분야 선택을 성공적으로 완료하였습니다."),
+    MEMBER_SELECT_INTEREST_LANGUAGES_OK(HttpStatus.OK, "MEMBER_1004", "유저 관심언어 선택을 성공적으로 완료하였습니다."),
     MEMBER_SIGN_UP_OK(HttpStatus.OK, "MEMBER_1005", "유저 회원가입에 성공하였습니다."),
     MEMBER_LOGIN_OK(HttpStatus.OK, "MEMBER_1006", "유저 로그인에 성공하였습니다."),
     MEMBER_LOGOUT_OK(HttpStatus.OK, "MEMBER_1007", "유저 로그아웃에 성공하였습니다."),

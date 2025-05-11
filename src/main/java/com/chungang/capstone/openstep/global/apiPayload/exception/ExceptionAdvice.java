@@ -117,4 +117,21 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
         );
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException e, WebRequest request) {
+        log.warn("[IllegalArgumentException] {}", e.getMessage());
+        return handleExceptionInternalFalse(
+                e,
+                ErrorStatus._BAD_REQUEST,
+                HttpHeaders.EMPTY,
+                HttpStatus.BAD_REQUEST,
+                request,
+                e.getMessage()
+        );
+    }
+
+
+
+
+
 }

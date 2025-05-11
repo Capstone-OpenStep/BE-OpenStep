@@ -38,7 +38,7 @@ public class Member extends BaseEntity {
     private int xp;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MemberSkill> skills = new ArrayList<>();
+    private List<MemberLanguage> languages = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberDomain> domains = new ArrayList<>();

@@ -23,8 +23,8 @@ public class MemberResponseDTO {
 	) {}
 
 	@Builder
-	public record SkillsRes(
-		List<String> skills
+	public record LanguagesRes(
+		List<String> languages
 	) {}
 
 	@Builder
