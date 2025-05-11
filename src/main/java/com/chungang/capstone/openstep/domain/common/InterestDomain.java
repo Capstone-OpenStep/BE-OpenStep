@@ -1,5 +1,7 @@
 package com.chungang.capstone.openstep.domain.common;
 
+import java.util.Arrays;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @Getter
@@ -30,5 +32,12 @@ public enum InterestDomain {
 
     InterestDomain(String label) {
         this.label = label;
+    }
+
+    public static InterestDomain fromLabel(String label) {
+        return Arrays.stream(InterestDomain.values())
+                .filter(domain -> domain.getLabel().equalsIgnoreCase(label))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 도메인: " + label));
     }
 }

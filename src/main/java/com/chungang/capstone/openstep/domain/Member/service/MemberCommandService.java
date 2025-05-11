@@ -38,7 +38,7 @@ public class MemberCommandService {
 		domainsReq.domains().forEach(domainName -> {
 			InterestDomain domainEnum;
 			try {
-				domainEnum = InterestDomain.valueOf(domainName.toUpperCase());
+				domainEnum = InterestDomain.fromLabel(domainName);
 			} catch (IllegalArgumentException e) {
 				throw new IllegalArgumentException("존재하지 않는 도메인: " + domainName);
 			}
