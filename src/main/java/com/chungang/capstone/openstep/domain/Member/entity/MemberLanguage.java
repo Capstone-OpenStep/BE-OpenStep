@@ -1,11 +1,7 @@
 package com.chungang.capstone.openstep.domain.Member.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.chungang.capstone.openstep.domain.common.InterestLanguage;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 @Builder
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class MemberSkill {
+public class MemberLanguage {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -24,7 +20,7 @@ public class MemberSkill {
 	@JoinColumn(name = "member_id")
 	private Member member;
 
-	@ManyToOne
-	@JoinColumn(name = "skill_id")
-	private Skill skill;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private InterestLanguage language;
 }

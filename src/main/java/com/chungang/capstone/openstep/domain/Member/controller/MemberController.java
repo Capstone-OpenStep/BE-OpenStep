@@ -3,6 +3,7 @@ package com.chungang.capstone.openstep.domain.Member.controller;
 import java.util.List;
 
 import com.chungang.capstone.openstep.domain.Member.service.AuthService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,42 +62,58 @@ public class MemberController {
 		return ApiResponse.onSuccess(SuccessStatus.MEMBER_UPDATE_ACCESS_TOKEN_OK, response);
 	}
 
+	@PostMapping("/{memberId}/interest/languages")
+	@Operation(summary = "관심언어(languages) 선택 API", description = "사용자의 기술스택 내역을 수정합니다.")
+	public ApiResponse<MemberResponseDTO.LanguagesRes> selectInterestLanguages(@PathVariable Long memberId,
+																	   @Valid @RequestBody MemberRequestDTO.UpdateLanguagesReq languagesReq) {
+		MemberResponseDTO.LanguagesRes languagesRes = memberCommandService.selectInterestLanguages(memberId, languagesReq);
+		return ApiResponse.onSuccess(SuccessStatus.MEMBER_SELECT_INTEREST_LANGUAGES_OK, languagesRes);
+	}
 
-	@Operation(summary = "관심사(domain) 조회 API", description = "사용자의 관심사(도메인)을 조회합니다.")
+	@PostMapping("/{memberId}/interest/domains")
+	@Operation(summary = "관심분야(domains) 선택 API", description = "사용자가 관심있는 분야를 수정합니다.")
+	public ApiResponse<MemberResponseDTO.DomainsRes> selectInterestDomains(@PathVariable Long memberId,
+																   @Valid @RequestBody MemberRequestDTO.UpdateDomainsReq domainsReq) {
+		MemberResponseDTO.DomainsRes domainsRes = memberCommandService.selectInterestDomains(memberId, domainsReq);
+		return ApiResponse.onSuccess(SuccessStatus.MEMBER_SELECT_INTEREST_DOMAINS_OK, domainsRes);
+	}
+
+	@GetMapping("/languages")
+	@Operation(summary = "사용자 관심언어(languages) 조회 API", description = "사용자의 관심언어를 조회합니다.")
+	public ApiResponse<MemberResponseDTO.LanguagesRes> getMemberLanguages(){
+		Long memberId= SecurityUtils.getCurrentMemberId();
+		log.info("memberId={}",memberId);
+		MemberResponseDTO.LanguagesRes languageRes =memberQueryService.getLanguages(memberId);
+		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_INTEREST_LANGUAGES_OK, languageRes);
+	}
+
 	@GetMapping("/domains")
-	public ApiResponse<MemberResponseDTO.DomainsRes> getDomains(){
+	@Operation(summary = "사용자 관심분야(domains) 조회 API", description = "사용자의 관심분야을 조회합니다.")
+	public ApiResponse<MemberResponseDTO.DomainsRes> getMemberDomains(){
 		Long memberId= SecurityUtils.getCurrentMemberId();
 		log.info("memberId={}",memberId);
 		MemberResponseDTO.DomainsRes domainsRes =memberQueryService.getDomains(memberId);
-		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_INTERESTS_OK, domainsRes);
+		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_INTEREST_DOMAINS_OK, domainsRes);
 	}
 
-	@Operation(summary = "관심사(domain) 수정 API", description = "사용자의 관심사(도메인)내역을 수정합니다.")
-	@PatchMapping("/domains")
-	public ApiResponse<MemberResponseDTO.DomainsRes> updateDomains(@RequestBody MemberRequestDTO.UpdateDomainsReq domainsReq){
-		Long memberId= SecurityUtils.getCurrentMemberId();
-		log.info("memberId={}",memberId);
-		MemberResponseDTO.DomainsRes domainsRes =memberCommandService.updateDomains(memberId,domainsReq);
-		return ApiResponse.onSuccess(SuccessStatus.MEMBER_PATCH_INTERESTS_OK, domainsRes);
-	}
+//	@Operation(summary = "관심언어(languages) 선택 API", description = "사용자의 기술스택 내역을 수정합니다.")
+//	@PostMapping("/interest/languages")
+//	public ApiResponse<MemberResponseDTO.LanguagesRes> selectLanguages(@Valid @RequestBody MemberRequestDTO.UpdateLanguagesReq languagesReq){
+//		Long memberId= SecurityUtils.getCurrentMemberId();
+//		log.info("memberId={}",memberId);
+//		MemberResponseDTO.LanguagesRes languagesRes =memberCommandService.updateLanguages(memberId,languagesReq);
+//		return ApiResponse.onSuccess(SuccessStatus.MEMBER_PATCH_LANGUAGES_OK, languagesRes);
+//	}
 
-	@Operation(summary = "기술스택 조회 API", description = "사용자의 기술스택 내역을 조회합니다.")
-	@GetMapping("/skills")
-	public ApiResponse<MemberResponseDTO.SkillsRes> getSkills(){
-		Long memberId= SecurityUtils.getCurrentMemberId();
-		log.info("memberId={}",memberId);
-		MemberResponseDTO.SkillsRes skillRes =memberQueryService.getSkills(memberId);
-		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_SKILLS_OK, skillRes);
-	}
+	//	@Operation(summary = "관심분야(domains) 선택 API", description = "사용자가 관심있는 분야를 선택합니다.")
+//	@PatchMapping("/interest/domains")
+//	public ApiResponse<MemberResponseDTO.DomainsRes> selectDomains(@Valid @RequestBody MemberRequestDTO.UpdateDomainsReq domainsReq){
+//		Long memberId= SecurityUtils.getCurrentMemberId();
+//		log.info("memberId={}",memberId);
+//		MemberResponseDTO.DomainsRes domainsRes =memberCommandService.updateDomains(memberId,domainsReq);
+//		return ApiResponse.onSuccess(SuccessStatus.MEMBER_PATCH_INTERESTS_OK, domainsRes);
+//	}
 
-	@Operation(summary = "기술스택 수정 API", description = "사용자의 기술스택 내역을 수정합니다.")
-	@PatchMapping("/skills")
-	public ApiResponse<MemberResponseDTO.SkillsRes> updateSkills(@RequestBody MemberRequestDTO.UpdateSkillsReq skillsReq){
-		Long memberId= SecurityUtils.getCurrentMemberId();
-		log.info("memberId={}",memberId);
-		MemberResponseDTO.SkillsRes skillsRes =memberCommandService.updateSkills(memberId,skillsReq);
-		return ApiResponse.onSuccess(SuccessStatus.MEMBER_PATCH_SKILLS_OK, skillsRes);
-	}
 
 	@Operation(summary = "기여내역 조회 API", description = "사용자의 기여내역을 조회합니다.")
 	@GetMapping("/contributions")

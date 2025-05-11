@@ -2,12 +2,8 @@ package com.chungang.capstone.openstep.domain.Member.entity;
 
 import com.chungang.capstone.openstep.domain.common.BaseEntity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.chungang.capstone.openstep.domain.common.InterestDomain;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +21,7 @@ public class MemberDomain extends BaseEntity {
 	@JoinColumn(name = "member_id")
 	private Member member;
 
-	@ManyToOne
-	@JoinColumn(name = "domain_id")
-	private Domain domain;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private InterestDomain domain;
 }
