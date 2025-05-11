@@ -62,7 +62,7 @@ public class MemberController {
 		return ApiResponse.onSuccess(SuccessStatus.MEMBER_UPDATE_ACCESS_TOKEN_OK, response);
 	}
 
-	@PostMapping("/{memberId}/interest/languages")
+	@PostMapping("/{memberId}/select/languages")
 	@Operation(summary = "관심언어(languages) 선택 API", description = "사용자의 기술스택 내역을 수정합니다.")
 	public ApiResponse<MemberResponseDTO.LanguagesRes> selectInterestLanguages(@PathVariable Long memberId,
 																	   @Valid @RequestBody MemberRequestDTO.UpdateLanguagesReq languagesReq) {
@@ -70,7 +70,7 @@ public class MemberController {
 		return ApiResponse.onSuccess(SuccessStatus.MEMBER_SELECT_INTEREST_LANGUAGES_OK, languagesRes);
 	}
 
-	@PostMapping("/{memberId}/interest/domains")
+	@PostMapping("/{memberId}/select/domains")
 	@Operation(summary = "관심분야(domains) 선택 API", description = "사용자가 관심있는 분야를 수정합니다.")
 	public ApiResponse<MemberResponseDTO.DomainsRes> selectInterestDomains(@PathVariable Long memberId,
 																   @Valid @RequestBody MemberRequestDTO.UpdateDomainsReq domainsReq) {
@@ -78,41 +78,41 @@ public class MemberController {
 		return ApiResponse.onSuccess(SuccessStatus.MEMBER_SELECT_INTEREST_DOMAINS_OK, domainsRes);
 	}
 
-	@GetMapping("/languages")
-	@Operation(summary = "사용자 관심언어(languages) 조회 API", description = "사용자의 관심언어를 조회합니다.")
-	public ApiResponse<MemberResponseDTO.LanguagesRes> getMemberLanguages(){
-		Long memberId= SecurityUtils.getCurrentMemberId();
-		log.info("memberId={}",memberId);
-		MemberResponseDTO.LanguagesRes languageRes =memberQueryService.getLanguages(memberId);
-		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_INTEREST_LANGUAGES_OK, languageRes);
-	}
-
-	@GetMapping("/domains")
-	@Operation(summary = "사용자 관심분야(domains) 조회 API", description = "사용자의 관심분야을 조회합니다.")
-	public ApiResponse<MemberResponseDTO.DomainsRes> getMemberDomains(){
-		Long memberId= SecurityUtils.getCurrentMemberId();
-		log.info("memberId={}",memberId);
-		MemberResponseDTO.DomainsRes domainsRes =memberQueryService.getDomains(memberId);
-		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_INTEREST_DOMAINS_OK, domainsRes);
-	}
-
-//	@Operation(summary = "관심언어(languages) 선택 API", description = "사용자의 기술스택 내역을 수정합니다.")
-//	@PostMapping("/interest/languages")
-//	public ApiResponse<MemberResponseDTO.LanguagesRes> selectLanguages(@Valid @RequestBody MemberRequestDTO.UpdateLanguagesReq languagesReq){
+//	@GetMapping("/{member-id}/languages")
+//	@Operation(summary = "사용자 관심언어(languages) 조회 API", description = "사용자의 관심언어를 조회합니다.")
+//	public ApiResponse<MemberResponseDTO.LanguagesRes> getMemberLanguages(){
 //		Long memberId= SecurityUtils.getCurrentMemberId();
 //		log.info("memberId={}",memberId);
-//		MemberResponseDTO.LanguagesRes languagesRes =memberCommandService.updateLanguages(memberId,languagesReq);
-//		return ApiResponse.onSuccess(SuccessStatus.MEMBER_PATCH_LANGUAGES_OK, languagesRes);
+//		MemberResponseDTO.LanguagesRes languageRes =memberQueryService.getLanguages(memberId);
+//		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_INTEREST_LANGUAGES_OK, languageRes);
 //	}
-
-	//	@Operation(summary = "관심분야(domains) 선택 API", description = "사용자가 관심있는 분야를 선택합니다.")
-//	@PatchMapping("/interest/domains")
-//	public ApiResponse<MemberResponseDTO.DomainsRes> selectDomains(@Valid @RequestBody MemberRequestDTO.UpdateDomainsReq domainsReq){
+//
+//	@GetMapping("/{member-id}/domains")
+//	@Operation(summary = "사용자 관심분야(domains) 조회 API", description = "사용자의 관심분야을 조회합니다.")
+//	public ApiResponse<MemberResponseDTO.DomainsRes> getMemberDomains(){
 //		Long memberId= SecurityUtils.getCurrentMemberId();
 //		log.info("memberId={}",memberId);
-//		MemberResponseDTO.DomainsRes domainsRes =memberCommandService.updateDomains(memberId,domainsReq);
-//		return ApiResponse.onSuccess(SuccessStatus.MEMBER_PATCH_INTERESTS_OK, domainsRes);
+//		MemberResponseDTO.DomainsRes domainsRes =memberQueryService.getDomains(memberId);
+//		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_INTEREST_DOMAINS_OK, domainsRes);
 //	}
+
+	// without token
+	@GetMapping("/{memberId}/languages")
+	@Operation(summary = "사용자 관심 언어 조회 API", description = "사용자의 관심 언어를 조회합니다.")
+	public ApiResponse<MemberResponseDTO.LanguagesRes> getMemberLanguages(@PathVariable Long memberId) {
+		//log.info("getMemberLanguages for memberId={}", memberId);
+		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_INTEREST_LANGUAGES_OK,
+				memberQueryService.getLanguages(memberId));
+	}
+
+	// without token
+	@GetMapping("/{memberId}/domains")
+	@Operation(summary = "사용자 관심 분야 조회 API", description = "사용자의 관심 분야를 조회합니다.")
+	public ApiResponse<MemberResponseDTO.DomainsRes> getMemberDomains(@PathVariable Long memberId) {
+		//log.info("getMemberDomains for memberId={}", memberId);
+		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_INTEREST_DOMAINS_OK,
+				memberQueryService.getDomains(memberId));
+	}
 
 
 	@Operation(summary = "기여내역 조회 API", description = "사용자의 기여내역을 조회합니다.")
