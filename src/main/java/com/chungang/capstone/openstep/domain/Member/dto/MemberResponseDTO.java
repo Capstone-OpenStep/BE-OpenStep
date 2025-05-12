@@ -28,7 +28,7 @@ public class MemberResponseDTO {
 	) {}
 
 	@Builder
-	public record Oauth2ResponseDTO(String redirectUrl) {}
+	public record Oauth2ResponseDTO(String redirectUri) {}
 
 	@Builder
 	public record MemberTokenResponseDTO (
