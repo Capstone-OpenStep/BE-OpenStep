@@ -78,6 +78,8 @@ public class GithubOauthService {
 		if (member == null) {
 			member = Member.builder()
 				.githubId(githubUser.login())
+				//임시로 깃허브id로 이메일을 설정->JWT관련 오류
+				.email(githubUser.login())
 				.build();
 			memberRepository.save(member);
 			isNewUser = true;
