@@ -19,13 +19,29 @@ public class PrincipalDetailsService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
 
-   @Override
-   public UserDetails loadUserByUsername(String memberId) throws UsernameNotFoundException {
-       Member member = memberRepository.findById(Long.parseLong(memberId))
-               .orElseThrow(() -> new AuthException(ErrorStatus.MEMBER_NOT_FOUND));
+    @Override
+    public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
+        try {
+            // 숫자면 memberId로 간주 (토큰 인증시)
+            Long memberId = Long.parseLong(identifier);
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new AuthException(ErrorStatus.MEMBER_NOT_FOUND));
+            return new PrincipalDetails(member);
+        } catch (NumberFormatException e) {
+            // 그 외는 email로 간주 (이메일 로그인시)
+            Member member = memberRepository.findByEmail(identifier)
+                    .orElseThrow(() -> new AuthException(ErrorStatus.MEMBER_NOT_FOUND));
+            return new PrincipalDetails(member);
+        }
+    }
 
-       return new PrincipalDetails(member);
-   }
+    //   @Override
+    //   public UserDetails loadUserByUsername(String memberId) throws UsernameNotFoundException {
+    //       Member member = memberRepository.findById(Long.parseLong(memberId))
+    //               .orElseThrow(() -> new AuthException(ErrorStatus.MEMBER_NOT_FOUND));
+    //
+    //       return new PrincipalDetails(member);
+    //   }
 
     // @Override
     // public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
