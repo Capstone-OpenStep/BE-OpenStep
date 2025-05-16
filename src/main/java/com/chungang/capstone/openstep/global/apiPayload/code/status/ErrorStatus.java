@@ -18,6 +18,9 @@ public enum ErrorStatus implements BaseErrorCode {
     //GITHUB GRAPHQL 관련
     GITHUB_GRAPHQL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "GRAPHQL_001", "서버측에서 깃허브 GraphQL API 호출에 실패했습니다."),
 
+    //GITHUB REST 관련
+    GITHUB_REST_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "REST_001", "서버측에서 깃허브 REST API 호출에 실패했습니다."),
+
     // Auth 관련
     AUTH_EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_001", "토큰이 만료되었습니다."),
     AUTH_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_002", "토큰이 유효하지 않습니다."),
