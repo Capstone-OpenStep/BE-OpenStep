@@ -32,7 +32,7 @@ public class GithubOAuthController {
 			String accessToken = githubOauthService.getAccessTokenByCode(code);
 			GithubOAuthDTO.GithubUserInfoRes user= githubOauthService.getGithubUserByAccessToken(accessToken);
 			log.info("user={}",user);
-			LoginResult result=githubOauthService.saveOrUpdateUser(user);
+			LoginResult result=githubOauthService.saveOrUpdateUser(user,accessToken);
 			return ApiResponse.onSuccess(SuccessStatus.USER_GITHUB_LOGIN_OK, MemberConverter.memberTo(result.member(),result.isNewUser(),result.accessToken()));
 		} catch (NullPointerException e) {
 			throw new AuthException(ErrorStatus.GITHUB_AUTH_ERROR);
