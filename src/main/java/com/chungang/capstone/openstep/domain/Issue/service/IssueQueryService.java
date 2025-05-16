@@ -1,8 +1,6 @@
 package com.chungang.capstone.openstep.domain.Issue.service;
 
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubIssueResponse;
-import com.chungang.capstone.openstep.domain.Github.dto.GitHubIssueResponse.IssueNode;
-import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse;
 import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
 import com.chungang.capstone.openstep.domain.Issue.repository.IssueRepository;
 import com.chungang.capstone.openstep.domain.Issue.dto.IssueResponseDTO;
@@ -21,13 +19,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class IssueQueryService {
 
     private final IssueRepository issueRepository;
+
     private final GitHubGraphQLService gitHubGraphQLService;
     private final RepoRepository repoRepository;
     private final OpenAIService openAIService;

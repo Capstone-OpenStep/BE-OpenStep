@@ -31,6 +31,8 @@ public class Member extends BaseEntity {
     @Column(nullable = true)
     private String password;
 
+    private String githubAccessToken;
+
     private String nickname;
 
     private int level;
@@ -53,5 +55,9 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Rank> ranks = new ArrayList<>();
+
+    public void updateGithubAccessToken(String githubAccessToken) {
+        this.githubAccessToken = githubAccessToken;
+    }
 }
 

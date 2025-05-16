@@ -6,10 +6,6 @@ import com.chungang.capstone.openstep.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Getter
 @Setter
@@ -31,9 +27,12 @@ public class Task extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    private String status; // ASSIGNED / PR_CREATED / MERGED 등
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status; // ASSIGNED / PR_CREATED / MERGED 등
 
     private String branchName;
 
     private String prUrl;
+
+    private String forkedUrl;
 }

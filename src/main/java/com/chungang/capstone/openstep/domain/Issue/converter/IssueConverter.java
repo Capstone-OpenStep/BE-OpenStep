@@ -1,10 +1,9 @@
 package com.chungang.capstone.openstep.domain.Issue.converter;
 
-import com.chungang.capstone.openstep.domain.Github.dto.GitHubIssueResponse;
 import com.chungang.capstone.openstep.domain.Issue.dto.IssueResponseDTO;
 import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
+import com.chungang.capstone.openstep.domain.Task.entity.Task;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,5 +58,15 @@ public class IssueConverter {
                 .build();
     }
 
-
+    public static IssueResponseDTO.IssueAssignmentDTO toIssueAssignDTO(Task task) {
+        return IssueResponseDTO.IssueAssignmentDTO.builder()
+                .issueId(task.getIssue().getIssueId())
+                .taskId(task.getTaskId())
+                .title(task.getIssue().getTitle())
+                .createdAt(task.getCreatedAt().toString())
+                .updatedAt(task.getUpdatedAt().toString())
+                .originalUrl(task.getIssue().getGithubUrl())
+                .forkedUrl(task.getForkedUrl())
+                .build();
+    }
 }

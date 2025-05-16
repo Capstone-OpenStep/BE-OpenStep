@@ -41,5 +41,15 @@ public class IssueResponseDTO {
         private List<String> labels;
     }
 
+    @Builder
+    public record IssueAssignmentDTO(
+        Long issueId,
+        Long taskId,
+        String title,
+        String originalUrl,
+        String forkedUrl,
+        String createdAt,
+        String updatedAt
+    ) { }
 
 }

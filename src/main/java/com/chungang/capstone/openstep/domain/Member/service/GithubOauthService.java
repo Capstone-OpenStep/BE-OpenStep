@@ -70,7 +70,7 @@ public class GithubOauthService {
 		).getBody());
 	}
 
-	public LoginResult saveOrUpdateUser(GithubOAuthDTO.GithubUserInfoRes githubUser) {
+	public LoginResult saveOrUpdateUser(GithubOAuthDTO.GithubUserInfoRes githubUser, String githubAccessToken) {
 		// 1. loginId로 DB에서 회원 조회
 		Member member = memberRepository.findByGithubId(githubUser.login());
 		boolean isNewUser = false;
@@ -80,9 +80,15 @@ public class GithubOauthService {
 				.githubId(githubUser.login())
 				//임시로 깃허브id로 이메일을 설정->JWT관련 오류
 				.email(githubUser.login())
+				.githubAccessToken(githubAccessToken)
 				.build();
 			memberRepository.save(member);
 			isNewUser = true;
+		}
+		else {
+			// 회원이 존재하면 accessToken 업데이트
+			member.updateGithubAccessToken(githubAccessToken);
+			memberRepository.save(member);
 		}
 		// 3. JWT 토큰 생성
 		String accessToken = jwtTokenProvider.createAccessToken(member.getMemberId());
