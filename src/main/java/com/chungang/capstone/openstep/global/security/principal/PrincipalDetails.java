@@ -40,6 +40,10 @@ public class PrincipalDetails implements UserDetails {
         return member.getGithubId();
     }
 
+    public Member getMember() {
+        return member;
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;
