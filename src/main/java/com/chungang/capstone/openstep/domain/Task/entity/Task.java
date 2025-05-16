@@ -31,7 +31,8 @@ public class Task extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    private String status; // ASSIGNED / PR_CREATED / MERGED 등
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status; // ASSIGNED / PR_CREATED / MERGED 등
 
     private String branchName;
 
