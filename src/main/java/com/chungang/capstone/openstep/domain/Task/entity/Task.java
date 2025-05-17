@@ -35,4 +35,8 @@ public class Task extends BaseEntity {
     private String prUrl;
 
     private String forkedUrl;
+
+    public void updateStatus(TaskStatus resolvedStatus) {
+        this.status = resolvedStatus;
+    }
 }

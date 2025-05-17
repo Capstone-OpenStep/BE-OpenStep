@@ -5,6 +5,8 @@ import java.util.List;
 public class PullRequestResponse {
 	public record PullRequestRes(
 		String title,
+		int number,
+		String state,
 		String url,
 		String createdAt,
 		String mergedAt,
