@@ -202,14 +202,17 @@ public class GitHubGraphQLService {
                   primaryLanguage { name }
                   owner { login }
                   forkCount
-                  issues(states: OPEN) { totalCount }
+                  openIssues: issues(states: OPEN) { totalCount }
+                  closedIssues: issues(states: CLOSED) { totalCount }
+                  goodFirstIssue: issues(labels: ["good first issue"]) { totalCount }
+                  watchers { totalCount }
                   updatedAt
                 }
               }
             }
           }
         }
-        """, query.replace("\"", "\\\"")); // 쿼리 내 이스케이프 처리
+        """, query.replace("\"", "\\\""));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

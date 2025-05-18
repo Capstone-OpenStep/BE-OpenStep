@@ -39,6 +39,9 @@ public class Repo extends BaseEntity {
     private int openIssues;
     private int closedIssues;
 
+    @Column(name = "good_first_issue_count")
+    private int goodFirstIssueCount;
+
     @Column(name = "github_url", unique = true)
     private String githubUrl;
 

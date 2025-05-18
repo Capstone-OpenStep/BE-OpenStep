@@ -1,25 +1,28 @@
 package com.chungang.capstone.openstep.domain.Repo.service;
 
-import com.chungang.capstone.openstep.domain.common.InterestLanguage;
-import com.chungang.capstone.openstep.domain.common.InterestDomain;
-import com.chungang.capstone.openstep.domain.Github.service.GitHubGraphQLService;
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse;
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse.Node;
+import com.chungang.capstone.openstep.domain.Github.service.GitHubGraphQLService;
 import com.chungang.capstone.openstep.domain.Github.util.GitHubQueryBuilder;
 import com.chungang.capstone.openstep.domain.Member.repository.MemberDomainRepository;
 import com.chungang.capstone.openstep.domain.Member.repository.MemberLanguageRepository;
 import com.chungang.capstone.openstep.domain.OpenAI.service.OpenAIService;
 import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
 import com.chungang.capstone.openstep.domain.Repo.repository.RepoRepository;
+import com.chungang.capstone.openstep.domain.common.InterestDomain;
+import com.chungang.capstone.openstep.domain.common.InterestLanguage;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
-import com.chungang.capstone.openstep.global.apiPayload.exception.GithubGraphQLException;
 import com.chungang.capstone.openstep.global.apiPayload.exception.handler.RepoHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,12 +30,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RepoQueryService {
 
-
     private final RepoRepository repoRepository;
     private final MemberLanguageRepository memberLanguageRepository;
     private final MemberDomainRepository memberDomainRepository;
     private final GitHubGraphQLService gitHubGraphQLService;
     private final OpenAIService openAIService;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final RepoCacheService repoCacheService;
 
 
     public List<Repo> getTrendingRepos() {
@@ -45,55 +49,31 @@ public class RepoQueryService {
             throw new IllegalStateException("GitHub 응답 파싱 실패: null 필드 존재");
         }
 
-        List<Repo> repos = gitHubRepoResponse.getData().getSearch().getEdges()
+        return gitHubRepoResponse.getData().getSearch().getEdges()
                 .stream()
                 .map(edge -> edge.getNode())
-                //.filter(node -> node.getStargazerCount() > 10000) // 별점 1,000 이상인 레포지토리만 필터링
-                .filter(node -> node.getOpenIssuesCount() > 0 && node.getGoodFirstIssueCount() > 0) // 오픈 이슈가 1개 이상이고, goodFirstIssue가 1개 이상인 레포지토리만 필터링
+                .filter(node -> node.getOpenIssuesCount() > 0 && node.getGoodFirstIssueCount() > 0)
                 .map(this::saveIfNotExists)
                 .collect(Collectors.toList());
-
-        return repos;
     }
 
     private Repo saveIfNotExists(Node node) {
         String url = node.getUrl();
-        log.info("🔎 saveIfNotExists 호출. URL: {}", url);
-
         Optional<Repo> existing = repoRepository.findByGithubUrl(url);
-        if (existing.isPresent()) {
-            log.info("✅ 이미 존재: {}", url);
-            return existing.get();
-        }
+        if (existing.isPresent()) return existing.get();
 
-        try {
-            Repo saved = repoRepository.save(toRepoEntity(node));
-            log.info("💾 저장 완료: {}", saved.getGithubUrl());
-
-            // 이 시점에서 다시 find 실패 → 디버그
-            return repoRepository.findByGithubUrl(url)
-                    .orElseThrow(() -> {
-                        log.error("❌ 저장 후 재조회 실패: {}", url);
-                        return new IllegalStateException("중복 삽입 후 조회 실패");
-                    });
-        } catch (Exception e) {
-            log.error("🔥 저장 중 예외 발생", e);
-            throw e;
-        }
+        Repo saved = repoRepository.save(toRepoEntity(node));
+        return repoRepository.findByGithubUrl(url).orElseThrow();
     }
-
-
 
     private Repo toRepoEntity(Node node) {
         String description = node.getDescription() != null ? node.getDescription() : "";
-        String readme = "README.md";
-        String summary = openAIService.summarizeRepo(description, readme);
-        String refinedSummary = openAIService.rewriteNaturalKorean(summary);
+        String summary = openAIService.rewriteNaturalKorean(openAIService.summarizeRepo(description, "README.md"));
 
         return Repo.builder()
                 .repoName(node.getName())
                 .description(node.getDescription())
-                .summary(refinedSummary)
+                .summary(summary)
                 .language(node.getPrimaryLanguage() != null ? node.getPrimaryLanguage().getName() : null)
                 .stars(node.getStargazerCount())
                 .githubUrl(node.getUrl())
@@ -102,118 +82,26 @@ public class RepoQueryService {
                 .openIssues(node.getOpenIssues() != null ? node.getOpenIssues().getTotalCount() : 0)
                 .closedIssues(node.getClosedIssues() != null ? node.getClosedIssues().getTotalCount() : 0)
                 .watchers(node.getWatchers() != null ? node.getWatchers().getTotalCount() : 0)
-                .watchers(node.getWatchersCount())
                 .lastGithubUpdate(node.getUpdatedAt() != null ? OffsetDateTime.parse(node.getUpdatedAt()).toLocalDateTime() : null)
                 .build();
     }
 
-
     public Repo getRepoById(Long repoId) {
-        return repoRepository.findById(repoId)
-                .orElseThrow(() -> new RepoHandler(ErrorStatus.REPO_NOT_FOUND));
+        return repoRepository.findById(repoId).orElseThrow(() -> new RepoHandler(ErrorStatus.REPO_NOT_FOUND));
     }
 
-
-    // 레포지토리 이름으로 검색
     public List<Repo> getReposByName(Optional<String> keyword) {
         String searchKeyword = keyword.orElse("").trim();
-
-        if (searchKeyword.isEmpty()) { return repoRepository.findTop10ByOrderByStarsDesc();}
-        return repoRepository.findTop10ByRepoNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrderByStarsDesc(
-                searchKeyword, searchKeyword
-        );
+        return searchKeyword.isEmpty()
+                ? repoRepository.findTop10ByOrderByStarsDesc()
+                : repoRepository.findTop10ByRepoNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrderByStarsDesc(searchKeyword, searchKeyword);
     }
-
-
-    // 사용자 맞춤 레포지토리 추천
-//    public List<Repo> getSuggestedRepos(Long memberId) {
-//        // 1. 관심사 조회
-//        List<String> languages = memberLanguageRepository.findLanguagesByMemberId(memberId)
-//                .stream()
-//                .map(InterestLanguage::getLabel)
-//                .collect(Collectors.toList());
-//
-//        List<String> domains = memberDomainRepository.findDomainsByMemberId(memberId)
-//                .stream()
-//                .map(InterestDomain::getLabel)
-//                .collect(Collectors.toList());
-//
-//        if (languages.isEmpty() && domains.isEmpty()) {
-//            throw new RepoHandler(ErrorStatus.REPO_NO_INTEREST_INFO);
-//        }
-//
-//        // 2. GitHub 검색 쿼리 생성
-//        String query = GitHubQueryBuilder.buildSearchQuery(languages, domains);
-//
-//        // 3. GraphQL 호출
-//        GitHubRepoResponse response = gitHubGraphQLService.searchRepositories(query);
-//        if (response == null || response.getData() == null || response.getData().getSearch() == null) {
-//            throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
-//        }
-//
-//        // 4. 필터링 및 저장
-//        List<Repo> filteredRepos = response.getData().getSearch().getEdges().stream()
-//                .map(edge -> edge.getNode())
-//                .filter(node ->
-//                        // 사용자의 관심 언어 또는 도메인과 연관된 레포 + 최소 star 수 조건
-//                        (node.getPrimaryLanguage() != null && languages.contains(node.getPrimaryLanguage().getName())) ||
-//                                (node.getDescription() != null && domains.stream().anyMatch(domain -> node.getDescription().toLowerCase().contains(domain.toLowerCase())))
-//                )
-//                .filter(node -> node.getStargazerCount() >= 50) // 최소 star 필터
-//                .sorted(Comparator.comparing(Node::getStargazerCount).reversed()) // 인기순 정렬
-//                .limit(10)
-//                .map(this::saveIfNotExists)
-//                .collect(Collectors.toList());
-//
-//        log.info("languages: {}", languages);
-//        log.info("domains: {}", domains);
-//
-//        return filteredRepos;
-//    }
-
-//    public List<Repo> getSuggestedRepos(Long memberId) {
-//        // 1. 관심사 조회
-//        List<String> languages = memberLanguageRepository.findLanguagesByMemberId(memberId)
-//                .stream().map(InterestLanguage::getLabel).toList();
-//        List<String> domains = memberDomainRepository.findDomainsByMemberId(memberId)
-//                .stream().map(InterestDomain::getLabel).toList();
-//
-//        if (languages.isEmpty() && domains.isEmpty()) {
-//            throw new RepoHandler(ErrorStatus.REPO_NO_INTEREST_INFO);
-//        }
-//
-//        log.info("languages: {}", languages);
-//        log.info("domains: {}", domains);
-//
-//        // 2. OR 스타일 쿼리 빌드
-//        String query = GitHubQueryBuilder.buildExplicitQuery(languages, domains);
-//        log.info("GraphQL query: {}", query);
-//
-//        // 3. GitHub GraphQL 호출
-//        GitHubRepoResponse response = gitHubGraphQLService.searchRepositories(query);
-//        if (response == null || response.getData() == null || response.getData().getSearch() == null) {
-//            throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
-//        }
-//
-//        // 4. 결과 필터링 및 정렬
-//        return response.getData().getSearch().getEdges().stream()
-//                .map(edge -> edge.getNode())
-//                .filter(node -> node.getStargazerCount() > 50) // 최소 스타 수 조건
-//                .sorted(Comparator.comparing(Node::getStargazerCount).reversed())
-//                .limit(10)
-//                .map(this::saveIfNotExists)
-//                .toList();
-//    }
 
     public List<Repo> getSuggestedRepos(Long memberId) {
         List<String> languages = memberLanguageRepository.findLanguagesByMemberId(memberId)
-                .stream()
-                .map(InterestLanguage::getLabel)
-                .toList();
+                .stream().map(InterestLanguage::getLabel).toList();
         List<String> domains = memberDomainRepository.findDomainsByMemberId(memberId)
-                .stream()
-                .map(InterestDomain::getLabel)
-                .toList();
+                .stream().map(InterestDomain::getLabel).toList();
 
         if (languages.isEmpty() && domains.isEmpty()) {
             throw new RepoHandler(ErrorStatus.REPO_NO_INTEREST_INFO);
@@ -221,64 +109,76 @@ public class RepoQueryService {
 
         Map<String, Repo> repoMap = new HashMap<>();
 
-        // 관심 언어 기반 추천 최대 5개씩
         for (String lang : languages) {
-            log.info("🔍 [언어] {} 기반 검색", lang);
-            String query = GitHubQueryBuilder.buildSearchQuery(List.of(lang), List.of());
-            GitHubRepoResponse response = gitHubGraphQLService.searchRepositories(query);
+            for (String domain : domains) {
+                // ✅ 캐시에서 조회
+                List<Repo> cached = repoCacheService.getReposByLanguageAndDomain(lang, domain);
+                if (cached != null) {
+                    log.info("✅ 캐시 히트: {} + {}", lang, domain);
+                    cached.forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
+                    continue;
+                }
 
-            parseResponseAndSave(response).stream()
-                    .sorted(Comparator.comparing(Repo::getStars).reversed())
-                    .limit(5)
-                    .forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
+                // ✅ 캐시에 없으면 GitHub에서 가져옴
+                String query = GitHubQueryBuilder.buildSearchQuery(List.of(lang), List.of(domain));
+                GitHubRepoResponse response = gitHubGraphQLService.searchRepositories(query);
+                List<Repo> parsed = parseResponseAndSave(response).stream().limit(10).toList();
 
-            log.info("✅ 누적 추천 수: {}", repoMap.size());
-            if (repoMap.size() >= 10) break;
+                repoCacheService.saveReposByLanguageAndDomain(lang, domain, parsed);
+                parsed.forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
+            }
         }
 
-        // 관심 도메인 기반 추천 최대 5개씩
-        for (String domain : domains) {
-            log.info("🔍 [도메인] {} 기반 검색", domain);
-            String query = GitHubQueryBuilder.buildSearchQuery(List.of(), List.of(domain));
-            GitHubRepoResponse response = gitHubGraphQLService.searchRepositories(query);
-
-            parseResponseAndSave(response).stream()
-                    .sorted(Comparator.comparing(Repo::getStars).reversed())
-                    .limit(5)
-                    .forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
-
-            log.info("✅ 누적 추천 수: {}", repoMap.size());
-            if (repoMap.size() >= 10) break;
-        }
-
-        // fallback: 아무 것도 없을 경우 트렌딩
         if (repoMap.isEmpty()) {
-            log.warn("⚠️ 관심사 기반 추천 실패 → 트렌딩 레포 대체");
             getTrendingRepos().forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
         }
 
-        return repoMap.values().stream()
-                .sorted(Comparator.comparing(Repo::getStars).reversed())
+        List<Repo> sorted = repoMap.values().stream()
+                .sorted(Comparator.comparingInt(r -> -1 * (r.getStars() + getGoodFirstIssueCountSafe(r.getGithubUrl()))))
                 .limit(10)
                 .toList();
+
+        // ✅ member별 캐시 저장 (선택적)
+        repoCacheService.saveRecommendedRepos(memberId, sorted);
+        return sorted;
     }
 
 
+    private int getGoodFirstIssueCountSafe(String githubUrl) {
+        return repoRepository.findByGithubUrl(githubUrl).map(Repo::getOpenIssues).orElse(0);
+    }
 
     private List<Repo> parseResponseAndSave(GitHubRepoResponse response) {
         if (response == null || response.getData() == null || response.getData().getSearch() == null) {
             return List.of();
         }
 
-        return response.getData().getSearch().getEdges().stream()
-                .map(edge -> edge.getNode())
-                .filter(node -> node.getStargazerCount() > 50)
+        List<Node> allNodes = response.getData().getSearch().getEdges().stream().map(GitHubRepoResponse.Edge::getNode).toList();
+
+        List<Repo> strictFiltered = allNodes.stream()
+                .filter(node -> node.getGoodFirstIssueCount() >= 5)
+                .filter(node -> node.getOpenIssuesCount() > 0)
+                .filter(node -> node.getStargazerCount() < 100000)
+                .filter(node -> isUpdatedWithin6Months(node.getUpdatedAt()))
                 .map(this::saveIfNotExists)
+                .collect(Collectors.toList());
+
+        if (strictFiltered.size() >= 5) return strictFiltered;
+
+        return allNodes.stream()
+                .filter(node -> node.getGoodFirstIssueCount() >= 5)
+                .filter(node -> node.getOpenIssuesCount() > 0)
+                .filter(node -> isUpdatedWithin6Months(node.getUpdatedAt()))
+                .map(this::saveIfNotExists)
+                .limit(10)
                 .collect(Collectors.toList());
     }
 
-
-
-
-
+    private boolean isUpdatedWithin6Months(String isoDate) {
+        try {
+            return ZonedDateTime.parse(isoDate).isAfter(ZonedDateTime.now().minusMonths(6));
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
 }
