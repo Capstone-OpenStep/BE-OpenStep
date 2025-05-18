@@ -9,6 +9,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -37,7 +38,9 @@ public class Repo extends BaseEntity {
     private int openIssues;
     private int closedIssues;
 
+    @Column(name = "github_url", unique = true)
     private String githubUrl;
+
 
     private String readmeUrl;
 
@@ -51,5 +54,23 @@ public class Repo extends BaseEntity {
 
     @OneToMany(mappedBy = "repo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bookmark> bookmarks = new ArrayList<>();
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Repo)) return false;
+        Repo repo = (Repo) o;
+        return Objects.equals(githubUrl, repo.githubUrl);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(githubUrl);
+    }
+
+
+
+
 }
 

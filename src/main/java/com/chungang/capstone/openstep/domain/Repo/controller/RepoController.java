@@ -6,6 +6,7 @@ import com.chungang.capstone.openstep.global.apiPayload.ApiResponse;
 import com.chungang.capstone.openstep.domain.Repo.converter.RepoConverter;
 import com.chungang.capstone.openstep.domain.Repo.dto.RepoResponseDTO;
 import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
+import com.chungang.capstone.openstep.global.security.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,6 +57,15 @@ public class RepoController {
         List<Repo> repos = repoQueryService.getReposByName(Optional.of(search.orElse("")));
         return ApiResponse.onSuccess(SuccessStatus.REPO_GET_LIST_BY_NAME_OK, RepoConverter.toRepoListDTO(repos));
     }
+
+    @GetMapping("/suggest")
+    @Operation(summary = "사용자 맞춤 레포지토리 추천 API", description = "사용자의 관심사에 맞는 오픈소스 레포지토리를 추천합니다.")
+    public ApiResponse<RepoResponseDTO.RepoListDTO> suggestRepos(@RequestParam Long memberId) {
+        List<Repo> repos = repoQueryService.getSuggestedRepos(memberId);
+        return ApiResponse.onSuccess(SuccessStatus.REPO_GET_SUGGEST_OK, RepoConverter.toRepoListDTO(repos));
+    }
+
+
 
 
 }
