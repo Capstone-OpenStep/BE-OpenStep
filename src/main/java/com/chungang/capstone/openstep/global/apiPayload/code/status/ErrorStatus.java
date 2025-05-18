@@ -51,7 +51,10 @@ public enum ErrorStatus implements BaseErrorCode {
     REPO_NO_INTEREST_INFO(HttpStatus.NOT_FOUND, "REPO_2004", "관심 레포지토리 정보가 없습니다."),
 
     // 이슈 관련 에러 3000
-    ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "ISSUE_3001", "존재하지 않는 이슈입니다.");
+    ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "ISSUE_3001", "존재하지 않는 이슈입니다."),
+
+    // 테스크 관련 에러 4000
+    TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "TASK_4001", "존재하지 않는 테스크입니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

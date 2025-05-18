@@ -32,8 +32,7 @@ public class PrincipalDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        //return member.getMemberId().toString();
-        return member.getEmail();
+        return member.getMemberId().toString();
     }
 
     public String getGithubId() {

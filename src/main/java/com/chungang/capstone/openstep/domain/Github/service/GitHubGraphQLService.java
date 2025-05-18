@@ -141,9 +141,11 @@ public class GitHubGraphQLService {
             pullRequests(first: 100, orderBy: {field: UPDATED_AT, direction: DESC}) {
               nodes {
                 title
+                number
                 url
                 createdAt
                 mergedAt
+                state
                 repository {
                   nameWithOwner
                 }

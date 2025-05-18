@@ -44,7 +44,8 @@ public enum SuccessStatus implements BaseCode {
     ISSUE_SUMMARY_OK(HttpStatus.OK, "ISSUE_3003", "이슈 요약 정보를 성공적으로 조회하였습니다."),
 
     //테스크 관련 응답
-    TASK_ASSIGN_OK(HttpStatus.OK, "TASK_4001", "테스크 할당이 완료되었습니다.");
+    TASK_ASSIGN_OK(HttpStatus.OK, "TASK_4001", "테스크 할당이 완료되었습니다."),
+    TASK_GET_OK(HttpStatus.OK,"TASK_4002","테스크 상세조회가 완료되었습니다." );
 
     private final HttpStatus httpStatus;
     private final String code;
