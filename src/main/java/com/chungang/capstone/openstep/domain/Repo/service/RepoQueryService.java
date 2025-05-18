@@ -57,18 +57,31 @@ public class RepoQueryService {
     }
 
     private Repo saveIfNotExists(Node node) {
-        return repoRepository.findByGithubUrl(node.getUrl())
-                .orElseGet(() -> {
-                    try {
-                        return repoRepository.save(toRepoEntity(node));
-                    } catch (Exception e) {
-                        // 이미 저장되어 있는 경우 (중복 insert 방지)
-                        log.warn("이미 저장된 Repo입니다. URL: {}", node.getUrl());
-                        return repoRepository.findByGithubUrl(node.getUrl())
-                                .orElseThrow(() -> new IllegalStateException("중복 삽입 후 조회 실패"));
-                    }
-                });
+        String url = node.getUrl();
+        log.info("🔎 saveIfNotExists 호출. URL: {}", url);
+
+        Optional<Repo> existing = repoRepository.findByGithubUrl(url);
+        if (existing.isPresent()) {
+            log.info("✅ 이미 존재: {}", url);
+            return existing.get();
+        }
+
+        try {
+            Repo saved = repoRepository.save(toRepoEntity(node));
+            log.info("💾 저장 완료: {}", saved.getGithubUrl());
+
+            // 이 시점에서 다시 find 실패 → 디버그
+            return repoRepository.findByGithubUrl(url)
+                    .orElseThrow(() -> {
+                        log.error("❌ 저장 후 재조회 실패: {}", url);
+                        return new IllegalStateException("중복 삽입 후 조회 실패");
+                    });
+        } catch (Exception e) {
+            log.error("🔥 저장 중 예외 발생", e);
+            throw e;
+        }
     }
+
 
 
     private Repo toRepoEntity(Node node) {
@@ -206,44 +219,50 @@ public class RepoQueryService {
             throw new RepoHandler(ErrorStatus.REPO_NO_INTEREST_INFO);
         }
 
-        Set<Repo> resultSet = new HashSet<>();
+        Map<String, Repo> repoMap = new HashMap<>();
 
-        // 관심 언어 기반 추천 최대 5개
+        // 관심 언어 기반 추천 최대 5개씩
         for (String lang : languages) {
+            log.info("🔍 [언어] {} 기반 검색", lang);
             String query = GitHubQueryBuilder.buildSearchQuery(List.of(lang), List.of());
             GitHubRepoResponse response = gitHubGraphQLService.searchRepositories(query);
-            resultSet.addAll(
-                    parseResponseAndSave(response).stream()
-                            .sorted(Comparator.comparing(Repo::getStars).reversed())
-                            .limit(5)
-                            .toList()
-            );
-            if (resultSet.size() >= 10) break;
+
+            parseResponseAndSave(response).stream()
+                    .sorted(Comparator.comparing(Repo::getStars).reversed())
+                    .limit(5)
+                    .forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
+
+            log.info("✅ 누적 추천 수: {}", repoMap.size());
+            if (repoMap.size() >= 10) break;
         }
 
-        // 관심 도메인 기반 추천 최대 5개
+        // 관심 도메인 기반 추천 최대 5개씩
         for (String domain : domains) {
+            log.info("🔍 [도메인] {} 기반 검색", domain);
             String query = GitHubQueryBuilder.buildSearchQuery(List.of(), List.of(domain));
             GitHubRepoResponse response = gitHubGraphQLService.searchRepositories(query);
-            resultSet.addAll(
-                    parseResponseAndSave(response).stream()
-                            .sorted(Comparator.comparing(Repo::getStars).reversed())
-                            .limit(5)
-                            .toList()
-            );
-            if (resultSet.size() >= 10) break;
+
+            parseResponseAndSave(response).stream()
+                    .sorted(Comparator.comparing(Repo::getStars).reversed())
+                    .limit(5)
+                    .forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
+
+            log.info("✅ 누적 추천 수: {}", repoMap.size());
+            if (repoMap.size() >= 10) break;
         }
 
-        // fallback: 트렌딩
-        if (resultSet.isEmpty()) {
-            resultSet.addAll(getTrendingRepos());
+        // fallback: 아무 것도 없을 경우 트렌딩
+        if (repoMap.isEmpty()) {
+            log.warn("⚠️ 관심사 기반 추천 실패 → 트렌딩 레포 대체");
+            getTrendingRepos().forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
         }
 
-        return resultSet.stream()
+        return repoMap.values().stream()
                 .sorted(Comparator.comparing(Repo::getStars).reversed())
                 .limit(10)
-                .collect(Collectors.toList());
+                .toList();
     }
+
 
 
     private List<Repo> parseResponseAndSave(GitHubRepoResponse response) {
