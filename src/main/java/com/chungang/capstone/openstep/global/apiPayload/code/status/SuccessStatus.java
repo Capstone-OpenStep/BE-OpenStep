@@ -36,6 +36,7 @@ public enum SuccessStatus implements BaseCode {
     REPO_DELETE_BOOKMARK_OK(HttpStatus.OK, "REPO_2005", "레포지토리 북마크 삭제가 완료되었습니다."),
     REPO_BOOKMARK_LIST_OK(HttpStatus.OK, "REPO_2006", "레포지토리 북마크 리스트를 성공적으로 조회하였습니다."),
     REPO_GET_LIST_BY_NAME_OK(HttpStatus.OK, "REPO_2007", "레포지토리 이름으로 검색한 결과 리스트를 성공적으로 조회하였습니다."),
+    REPO_GET_SUGGEST_OK(HttpStatus.OK, "REPO_2008", "레포지토리 추천 리스트를 성공적으로 조회하였습니다."),
 
     // 이슈 관련 응답
     ISSUE_GET_TRENDING_OK(HttpStatus.OK, "ISSUE_3001", "트렌딩 이슈 리스트를 성공적으로 조회하였습니다."),

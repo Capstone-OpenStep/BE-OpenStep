@@ -1,28 +1,43 @@
 package com.chungang.capstone.openstep.domain.Repo.service;
 
-import com.chungang.capstone.openstep.domain.Github.service.GitHubGraphQLService;
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse;
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse.Node;
+import com.chungang.capstone.openstep.domain.Github.service.GitHubGraphQLService;
+import com.chungang.capstone.openstep.domain.Github.util.GitHubQueryBuilder;
+import com.chungang.capstone.openstep.domain.Member.repository.MemberDomainRepository;
+import com.chungang.capstone.openstep.domain.Member.repository.MemberLanguageRepository;
 import com.chungang.capstone.openstep.domain.OpenAI.service.OpenAIService;
 import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
 import com.chungang.capstone.openstep.domain.Repo.repository.RepoRepository;
+import com.chungang.capstone.openstep.domain.common.InterestDomain;
+import com.chungang.capstone.openstep.domain.common.InterestLanguage;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
 import com.chungang.capstone.openstep.global.apiPayload.exception.handler.RepoHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RepoQueryService {
 
     private final RepoRepository repoRepository;
+    private final MemberLanguageRepository memberLanguageRepository;
+    private final MemberDomainRepository memberDomainRepository;
     private final GitHubGraphQLService gitHubGraphQLService;
     private final OpenAIService openAIService;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final RepoCacheService repoCacheService;
+
 
     public List<Repo> getTrendingRepos() {
         GitHubRepoResponse gitHubRepoResponse = gitHubGraphQLService.fetchTrendingRepositories();
@@ -34,32 +49,31 @@ public class RepoQueryService {
             throw new IllegalStateException("GitHub 응답 파싱 실패: null 필드 존재");
         }
 
-        List<Repo> repos = gitHubRepoResponse.getData().getSearch().getEdges()
+        return gitHubRepoResponse.getData().getSearch().getEdges()
                 .stream()
                 .map(edge -> edge.getNode())
-                //.filter(node -> node.getStargazerCount() > 10000) // 별점 1,000 이상인 레포지토리만 필터링
-                .filter(node -> node.getOpenIssuesCount() > 0 && node.getGoodFirstIssueCount() > 0) // 오픈 이슈가 1개 이상이고, goodFirstIssue가 1개 이상인 레포지토리만 필터링
+                .filter(node -> node.getOpenIssuesCount() > 0 && node.getGoodFirstIssueCount() > 0)
                 .map(this::saveIfNotExists)
                 .collect(Collectors.toList());
-
-        return repos;
     }
 
     private Repo saveIfNotExists(Node node) {
-        return repoRepository.findByGithubUrl(node.getUrl())
-                .orElseGet(() -> repoRepository.save(toRepoEntity(node)));
+        String url = node.getUrl();
+        Optional<Repo> existing = repoRepository.findByGithubUrl(url);
+        if (existing.isPresent()) return existing.get();
+
+        Repo saved = repoRepository.save(toRepoEntity(node));
+        return repoRepository.findByGithubUrl(url).orElseThrow();
     }
 
     private Repo toRepoEntity(Node node) {
         String description = node.getDescription() != null ? node.getDescription() : "";
-        String readme = "README.md";
-        String summary = openAIService.summarizeRepo(description, readme);
-        String refinedSummary = openAIService.rewriteNaturalKorean(summary);
+        String summary = openAIService.rewriteNaturalKorean(openAIService.summarizeRepo(description, "README.md"));
 
         return Repo.builder()
                 .repoName(node.getName())
                 .description(node.getDescription())
-                .summary(refinedSummary)
+                .summary(summary)
                 .language(node.getPrimaryLanguage() != null ? node.getPrimaryLanguage().getName() : null)
                 .stars(node.getStargazerCount())
                 .githubUrl(node.getUrl())
@@ -68,26 +82,103 @@ public class RepoQueryService {
                 .openIssues(node.getOpenIssues() != null ? node.getOpenIssues().getTotalCount() : 0)
                 .closedIssues(node.getClosedIssues() != null ? node.getClosedIssues().getTotalCount() : 0)
                 .watchers(node.getWatchers() != null ? node.getWatchers().getTotalCount() : 0)
-                .watchers(node.getWatchersCount())
                 .lastGithubUpdate(node.getUpdatedAt() != null ? OffsetDateTime.parse(node.getUpdatedAt()).toLocalDateTime() : null)
                 .build();
     }
 
-
     public Repo getRepoById(Long repoId) {
-        return repoRepository.findById(repoId)
-                .orElseThrow(() -> new RepoHandler(ErrorStatus.REPO_NOT_FOUND));
+        return repoRepository.findById(repoId).orElseThrow(() -> new RepoHandler(ErrorStatus.REPO_NOT_FOUND));
     }
 
-
-    // 레포지토리 이름으로 검색
     public List<Repo> getReposByName(Optional<String> keyword) {
         String searchKeyword = keyword.orElse("").trim();
-
-        if (searchKeyword.isEmpty()) { return repoRepository.findTop10ByOrderByStarsDesc();}
-        return repoRepository.findTop10ByRepoNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrderByStarsDesc(
-                searchKeyword, searchKeyword
-        );
+        return searchKeyword.isEmpty()
+                ? repoRepository.findTop10ByOrderByStarsDesc()
+                : repoRepository.findTop10ByRepoNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrderByStarsDesc(searchKeyword, searchKeyword);
     }
 
+    public List<Repo> getSuggestedRepos(Long memberId) {
+        List<String> languages = memberLanguageRepository.findLanguagesByMemberId(memberId)
+                .stream().map(InterestLanguage::getLabel).toList();
+        List<String> domains = memberDomainRepository.findDomainsByMemberId(memberId)
+                .stream().map(InterestDomain::getLabel).toList();
+
+        if (languages.isEmpty() && domains.isEmpty()) {
+            throw new RepoHandler(ErrorStatus.REPO_NO_INTEREST_INFO);
+        }
+
+        Map<String, Repo> repoMap = new HashMap<>();
+
+        for (String lang : languages) {
+            for (String domain : domains) {
+                // ✅ 캐시에서 조회
+                List<Repo> cached = repoCacheService.getReposByLanguageAndDomain(lang, domain);
+                if (cached != null) {
+                    log.info("✅ 캐시 히트: {} + {}", lang, domain);
+                    cached.forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
+                    continue;
+                }
+
+                // ✅ 캐시에 없으면 GitHub에서 가져옴
+                String query = GitHubQueryBuilder.buildSearchQuery(List.of(lang), List.of(domain));
+                GitHubRepoResponse response = gitHubGraphQLService.searchRepositories(query);
+                List<Repo> parsed = parseResponseAndSave(response).stream().limit(10).toList();
+
+                repoCacheService.saveReposByLanguageAndDomain(lang, domain, parsed);
+                parsed.forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
+            }
+        }
+
+        if (repoMap.isEmpty()) {
+            getTrendingRepos().forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
+        }
+
+        List<Repo> sorted = repoMap.values().stream()
+                .sorted(Comparator.comparingInt(r -> -1 * (r.getStars() + getGoodFirstIssueCountSafe(r.getGithubUrl()))))
+                .limit(10)
+                .toList();
+
+        // ✅ member별 캐시 저장 (선택적)
+        repoCacheService.saveRecommendedRepos(memberId, sorted);
+        return sorted;
+    }
+
+
+    private int getGoodFirstIssueCountSafe(String githubUrl) {
+        return repoRepository.findByGithubUrl(githubUrl).map(Repo::getOpenIssues).orElse(0);
+    }
+
+    private List<Repo> parseResponseAndSave(GitHubRepoResponse response) {
+        if (response == null || response.getData() == null || response.getData().getSearch() == null) {
+            return List.of();
+        }
+
+        List<Node> allNodes = response.getData().getSearch().getEdges().stream().map(GitHubRepoResponse.Edge::getNode).toList();
+
+        List<Repo> strictFiltered = allNodes.stream()
+                .filter(node -> node.getGoodFirstIssueCount() >= 5)
+                .filter(node -> node.getOpenIssuesCount() > 0)
+                .filter(node -> node.getStargazerCount() < 100000)
+                .filter(node -> isUpdatedWithin6Months(node.getUpdatedAt()))
+                .map(this::saveIfNotExists)
+                .collect(Collectors.toList());
+
+        if (strictFiltered.size() >= 5) return strictFiltered;
+
+        return allNodes.stream()
+                .filter(node -> node.getGoodFirstIssueCount() >= 5)
+                .filter(node -> node.getOpenIssuesCount() > 0)
+                .filter(node -> isUpdatedWithin6Months(node.getUpdatedAt()))
+                .map(this::saveIfNotExists)
+                .limit(10)
+                .collect(Collectors.toList());
+    }
+
+    private boolean isUpdatedWithin6Months(String isoDate) {
+        try {
+            return ZonedDateTime.parse(isoDate).isAfter(ZonedDateTime.now().minusMonths(6));
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
 }

@@ -187,4 +187,48 @@ public class GitHubGraphQLService {
             throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
         }
     }
+
+    public GitHubRepoResponse searchRepositories(String query) {
+        String finalQuery = String.format("""
+        {
+          search(query: "%s", type: REPOSITORY, first: 20) {
+            edges {
+              node {
+                ... on Repository {
+                  name
+                  description
+                  url
+                  stargazerCount
+                  primaryLanguage { name }
+                  owner { login }
+                  forkCount
+                  openIssues: issues(states: OPEN) { totalCount }
+                  closedIssues: issues(states: CLOSED) { totalCount }
+                  goodFirstIssue: issues(labels: ["good first issue"]) { totalCount }
+                  watchers { totalCount }
+                  updatedAt
+                }
+              }
+            }
+          }
+        }
+        """, query.replace("\"", "\\\""));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(githubToken);
+
+        HttpEntity<GitHubGraphQLRequest> request =
+                new HttpEntity<>(new GitHubGraphQLRequest(finalQuery), headers);
+
+        try {
+            ResponseEntity<GitHubRepoResponse> response = restTemplate.exchange(
+                    GITHUB_GRAPHQL_URL, HttpMethod.POST, request, GitHubRepoResponse.class);
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("GitHub 동적 레포 검색 실패", e);
+            throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
+        }
+    }
+
 }
