@@ -72,7 +72,8 @@ public class IssueConverter {
                 .build();
     }
 
-    public static IssueResponseDTO.IssueAssignmentDTO toIssueAssignDTO(Task task) {
+
+    public static IssueResponseDTO.IssueAssignmentDTO toIssueAssignDTO(Task task,boolean isAlreadyAssigned) {
         return IssueResponseDTO.IssueAssignmentDTO.builder()
                 .issueId(task.getIssue().getIssueId())
                 .taskId(task.getTaskId())
@@ -81,6 +82,8 @@ public class IssueConverter {
                 .updatedAt(task.getUpdatedAt().toString())
                 .originalUrl(task.getIssue().getGithubUrl())
                 .forkedUrl(task.getForkedUrl())
+                .branchName(task.getBranchName())
+                .isAssigned(isAlreadyAssigned)
                 .build();
     }
 }

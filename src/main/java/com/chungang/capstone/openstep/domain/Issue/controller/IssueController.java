@@ -54,8 +54,8 @@ public class IssueController {
 	public ApiResponse<IssueResponseDTO.IssueAssignmentDTO> assignIssueToUser(
 		@PathVariable("issue-id") Long issueId) {
 		Member member = SecurityUtils.getCurrentMember();
-		Task task = issueCommandService.makeTask(member, issueId);
-		return ApiResponse.onSuccess(SuccessStatus.TASK_ASSIGN_OK, IssueConverter.toIssueAssignDTO(task));
+		IssueResponseDTO.IssueAssignmentDTO task = issueCommandService.makeTask(member, issueId);
+		return ApiResponse.onSuccess(SuccessStatus.TASK_ASSIGN_OK, task);
 	}
 
 	// 사용자 맞춤 이슈 추천
