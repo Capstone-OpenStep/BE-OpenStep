@@ -11,10 +11,17 @@ public class TaskResponseDTO {
 			String title,
 			String forkedUrl,
 			TaskStatus status,
+			String branchName,
 			String createdAt,
 			String updatedAt,
 			Long issueId,
 			String issueUrl
+	) {
+	}
+
+	@Builder
+	public record TaskBranchName(
+			String branchName
 	) {
 	}
 }
