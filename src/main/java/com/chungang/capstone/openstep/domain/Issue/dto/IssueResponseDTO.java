@@ -47,7 +47,9 @@ public class IssueResponseDTO {
         Long taskId,
         String title,
         String originalUrl,
+        String branchName,
         String forkedUrl,
+        Boolean isAssigned,
         String createdAt,
         String updatedAt
     ) { }
