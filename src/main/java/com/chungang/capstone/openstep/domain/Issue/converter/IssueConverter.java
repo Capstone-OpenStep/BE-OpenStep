@@ -21,14 +21,14 @@ public class IssueConverter {
 //                        .build())
 //                .collect(Collectors.toList());
 //    }
-    public static List<IssueResponseDTO.TrendingIssueDTO> toTrendingDTOs(List<Issue> issues) {
+    public static List<IssueResponseDTO.IssueSimpleDTO> toIssueSimpleDTOs(List<Issue> issues) {
         return issues.stream()
                 .map(issue -> {
                     String filteredBody = (issue.getBody() == null || issue.getBody().length() < 200 || !issue.getBody().matches(".*[가-힣a-zA-Z].*"))
                             ? "내용 없음"
                             : issue.getBody();
 
-                    return IssueResponseDTO.TrendingIssueDTO.builder()
+                    return IssueResponseDTO.IssueSimpleDTO.builder()
                             .issueId(issue.getIssueId())
                             .title(issue.getTitle())
                             .body(filteredBody)
@@ -51,10 +51,16 @@ public class IssueConverter {
                 .body(issue.getBody())
                 .summary(issue.getSummary())
                 .author(issue.getAuthor())
-                .createdAt(issue.getCreatedAt().toString())
-                .updatedAt(issue.getUpdatedAt().toString())
+                .createdAt(issue.getCreatedAt() != null ? issue.getCreatedAt().toString() : null)
+                .updatedAt(issue.getUpdatedAt() != null ? issue.getUpdatedAt().toString() : null)
                 .labels(issue.getLabels())
                 .url(issue.getGithubUrl())
+                .build();
+    }
+
+    public static IssueResponseDTO.IssueListDTO toIssueListDTO(List<Issue> issues) {
+        return IssueResponseDTO.IssueListDTO.builder()
+                .issueList(toIssueSimpleDTOs(issues))
                 .build();
     }
 

@@ -12,7 +12,7 @@ public class IssueResponseDTO {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class TrendingIssueDTO {
+    public static class IssueSimpleDTO {
         private Long issueId;
         private String title;
         private String body;
@@ -52,4 +52,11 @@ public class IssueResponseDTO {
         String updatedAt
     ) { }
 
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class IssueListDTO {
+        private List<IssueSimpleDTO> issueList;
+    }
 }

@@ -111,15 +111,15 @@ public class RepoQueryService {
 
         for (String lang : languages) {
             for (String domain : domains) {
-                // ✅ 캐시에서 조회
+                // 캐시에서 조회
                 List<Repo> cached = repoCacheService.getReposByLanguageAndDomain(lang, domain);
                 if (cached != null) {
-                    log.info("✅ 캐시 히트: {} + {}", lang, domain);
+                    log.info("Cache Hit: {} + {}", lang, domain);
                     cached.forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
                     continue;
                 }
 
-                // ✅ 캐시에 없으면 GitHub에서 가져옴
+                // 캐시에 없으면 GitHub에서 가져옴
                 String query = GitHubQueryBuilder.buildSearchQuery(List.of(lang), List.of(domain));
                 GitHubRepoResponse response = gitHubGraphQLService.searchRepositories(query);
                 List<Repo> parsed = parseResponseAndSave(response).stream().limit(10).toList();
@@ -138,7 +138,6 @@ public class RepoQueryService {
                 .limit(10)
                 .toList();
 
-        // ✅ member별 캐시 저장 (선택적)
         repoCacheService.saveRecommendedRepos(memberId, sorted);
         return sorted;
     }

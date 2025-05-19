@@ -35,8 +35,8 @@ public class IssueController {
 	// 트렌딩 이슈 목록 조회 API
 	@GetMapping("/trending")
 	@Operation(summary = "트렌딩 issue 조회 API", description = "현재 인기 있는 트렌딩한 오픈소스 이슈를 조회합니다.")
-	public ApiResponse<List<IssueResponseDTO.TrendingIssueDTO>> getTrendingIssues() {
-		List<IssueResponseDTO.TrendingIssueDTO> issues = issueQueryService.getTrendingIssues();
+	public ApiResponse<List<IssueResponseDTO.IssueSimpleDTO>> getTrendingIssues() {
+		List<IssueResponseDTO.IssueSimpleDTO> issues = issueQueryService.getTrendingIssues();
 		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_TRENDING_OK, issues);
 	}
 
@@ -56,6 +56,15 @@ public class IssueController {
 		Member member = SecurityUtils.getCurrentMember();
 		Task task = issueCommandService.makeTask(member, issueId);
 		return ApiResponse.onSuccess(SuccessStatus.TASK_ASSIGN_OK, IssueConverter.toIssueAssignDTO(task));
+	}
+
+	// 사용자 맞춤 이슈 추천
+	@GetMapping("/suggest")
+	@Operation(summary = "사용자 맞춤 이슈 추천 API", description = "사용자의 관심사에 맞는 오픈소스 이슈를 추천합니다.")
+	public ApiResponse<IssueResponseDTO.IssueListDTO> suggestIssues() {
+		Member member = SecurityUtils.getCurrentMember();
+		List<Issue> issues = issueQueryService.getSuggestedIssues(member);
+		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_SUGGEST_OK, IssueConverter.toIssueListDTO(issues));
 	}
 
 }

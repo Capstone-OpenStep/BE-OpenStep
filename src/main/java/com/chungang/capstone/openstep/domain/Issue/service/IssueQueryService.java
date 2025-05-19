@@ -6,6 +6,7 @@ import com.chungang.capstone.openstep.domain.Issue.repository.IssueRepository;
 import com.chungang.capstone.openstep.domain.Issue.dto.IssueResponseDTO;
 import com.chungang.capstone.openstep.domain.Github.service.GitHubGraphQLService;
 import com.chungang.capstone.openstep.domain.Issue.converter.IssueConverter;
+import com.chungang.capstone.openstep.domain.Member.entity.Member;
 import com.chungang.capstone.openstep.domain.OpenAI.service.OpenAIService;
 import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
 import com.chungang.capstone.openstep.domain.Repo.repository.RepoRepository;
@@ -30,7 +31,7 @@ public class IssueQueryService {
     private final RepoRepository repoRepository;
     private final OpenAIService openAIService;
 
-    public List<IssueResponseDTO.TrendingIssueDTO> getTrendingIssues() {
+    public List<IssueResponseDTO.IssueSimpleDTO> getTrendingIssues() {
         List<Repo> repos = repoRepository.findAll(); // DB에 있는 5개 레포 사용
         List<Issue> allIssues = new ArrayList<>();
 
@@ -49,11 +50,11 @@ public class IssueQueryService {
                         .toList();
 
                 allIssues.addAll(savedIssues);
-                System.out.println("📌 " + owner + "/" + repoName + " 의 이슈 수: " + issueNodes.size());
+                System.out.println("[*] " + owner + "/" + repoName + " 의 이슈 수: " + issueNodes.size());
             }
         }
 
-        return IssueConverter.toTrendingDTOs(allIssues);
+        return IssueConverter.toIssueSimpleDTOs(allIssues);
     }
 
     private Issue saveIfNotExists(GitHubIssueResponse.IssueNode node, Repo repo) {
@@ -122,5 +123,11 @@ public class IssueQueryService {
         return issueRepository.findById(issueId)
                 .orElseThrow(() -> new IssueHandler(ErrorStatus.ISSUE_NOT_FOUND));
     }
+
+    // 사용자 맞춤 이슈 추천
+    public List<Issue> getSuggestedIssues(Member member) {
+        return null;
+    }
+
 
 }
