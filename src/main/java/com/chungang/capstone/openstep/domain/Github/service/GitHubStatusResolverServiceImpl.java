@@ -24,7 +24,7 @@ public class GitHubStatusResolverServiceImpl implements GitHubStatusResolverServ
         String user = member.getGithubId();
         String githubToken = member.getGithubAccessToken();
 
-        // 1. 사용자가 레포를 포크했는지 확인
+        // 사용자가 레포를 포크했는지 확인
         if (!gitHubRestService.doesForkExist(user, repo,githubToken)) {
             return TaskStatus.NOT_STARTED;
         }
@@ -34,24 +34,25 @@ public class GitHubStatusResolverServiceImpl implements GitHubStatusResolverServ
         //     return TaskStatus.FORKED;
         // }
 
-        // 2. PR 생성 여부
+        // PR 생성 여부
         PullRequestResponse.PullRequestRes pr = gitHubRestService.findPullRequest(owner, repo, task.getBranchName(), user,githubToken);
         if (pr == null) {
             //pr null인 경우는 PR이 생성되지 않은 상태
             return TaskStatus.FORKED;
         }
 
-        // 4. 리뷰 여부
-        if (gitHubRestService.hasReview(owner, repo, pr.number(),githubToken)) {
-            return TaskStatus.REVIEW;
-        }
 
-        // 5. 머지 or 반려 여부
+        // 머지 or 반려 여부
         if (pr.mergedAt()!=null) {
             return TaskStatus.MERGED;
             }
         else if (Objects.equals(pr.state(), "closed")) {
             return TaskStatus.REJECTED;
+        }
+
+        // 리뷰 여부
+        if (gitHubRestService.hasReview(owner, repo, pr.number(),githubToken)) {
+            return TaskStatus.REVIEW;
         }
 
         return TaskStatus.PR; // PR 생성만 된 상태
