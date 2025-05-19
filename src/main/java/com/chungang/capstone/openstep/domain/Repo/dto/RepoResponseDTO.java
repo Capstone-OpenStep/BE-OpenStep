@@ -24,6 +24,7 @@ public class RepoResponseDTO {
         private Integer forks;
         private Integer openIssues;
         private Integer closedIssues;
+        private Integer beginnerIssueCount;
         private String githubUrl;
         private String description;
     }
@@ -44,6 +45,7 @@ public class RepoResponseDTO {
         private int forks;
         private int openIssues;
         private int closedIssues;
+        private Integer beginnerIssueCount;
         private String githubUrl;
         private String readmeUrl;
     }

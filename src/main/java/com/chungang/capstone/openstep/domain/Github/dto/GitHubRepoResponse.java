@@ -35,7 +35,7 @@ public class GitHubRepoResponse {
         private Integer forkCount;
         private Issues openIssues;
         private Issues closedIssues;
-        private Issues goodFirstIssue;
+        private Issues beginnerIssues;
         public Watchers watchers;
         private String updatedAt;
 
@@ -54,8 +54,8 @@ public class GitHubRepoResponse {
             return closedIssues != null ? closedIssues.getTotalCount() : 0;
         }
 
-        public int getGoodFirstIssueCount() {
-            return goodFirstIssue != null ? goodFirstIssue.getTotalCount() : 0;
+        public int getBeginnerIssueCount() {
+            return beginnerIssues != null ? beginnerIssues.getTotalCount() : 0;
         }
     }
 

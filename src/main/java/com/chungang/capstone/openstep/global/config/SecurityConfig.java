@@ -54,6 +54,7 @@ public class SecurityConfig {
 
                                 // Issue 관련 접근
                                 .requestMatchers("/issues/trending", "/issues/{issue-id}", "/summary/issue/{issue-id}").permitAll()
+                                .requestMatchers("/issues/suggest").permitAll()
 
                                 // 기타 관련 접근
                                 .requestMatchers("/example/**").permitAll()

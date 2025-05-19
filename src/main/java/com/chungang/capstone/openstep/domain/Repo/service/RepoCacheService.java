@@ -17,9 +17,9 @@ public class RepoCacheService {
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
 
-    private final long CACHE_EXPIRE_SECONDS = 60L * 60 * 24 * 60; // 60일 유지
+    private final long CACHE_EXPIRE_SECONDS = 60L * 60 * 24 * 60; // TTL 60일
 
-    // 🔁 사용자별 추천 캐시 (기존 유지)
+    // 사용자별 추천 캐시 (기존 유지)
     public void saveRecommendedRepos(Long memberId, List<Repo> repos) {
         String key = generateMemberKey(memberId);
         try {
@@ -42,7 +42,7 @@ public class RepoCacheService {
         }
     }
 
-    // ✅ 새로운 관심 언어 + 관심 도메인 조합 캐시
+    // 새로운 관심 언어 + 관심 도메인 조합 캐시
     public void saveReposByLanguageAndDomain(String lang, String domain, List<Repo> repos) {
         String key = generateInterestKey(lang, domain);
         try {

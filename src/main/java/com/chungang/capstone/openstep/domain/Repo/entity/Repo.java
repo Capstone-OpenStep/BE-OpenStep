@@ -3,6 +3,7 @@ package com.chungang.capstone.openstep.domain.Repo.entity;
 import com.chungang.capstone.openstep.domain.Bookmark.entity.Bookmark;
 import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
 import com.chungang.capstone.openstep.domain.common.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,8 +40,8 @@ public class Repo extends BaseEntity {
     private int openIssues;
     private int closedIssues;
 
-    @Column(name = "good_first_issue_count")
-    private int goodFirstIssueCount;
+    @Column(name = "beginner_issue_count")
+    private int beginnerIssueCount;
 
     @Column(name = "github_url", unique = true)
     private String githubUrl;
@@ -54,6 +55,7 @@ public class Repo extends BaseEntity {
     private LocalDateTime lastGithubUpdate;
 
     @OneToMany(mappedBy = "repo", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Issue> issues = new ArrayList<>();
 
     @OneToMany(mappedBy = "repo", cascade = CascadeType.ALL, orphanRemoval = true)

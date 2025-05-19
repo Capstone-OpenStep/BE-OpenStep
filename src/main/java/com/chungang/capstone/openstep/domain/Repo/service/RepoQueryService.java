@@ -22,7 +22,6 @@ import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,7 +37,6 @@ public class RepoQueryService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final RepoCacheService repoCacheService;
 
-
     public List<Repo> getTrendingRepos() {
         GitHubRepoResponse gitHubRepoResponse = gitHubGraphQLService.fetchTrendingRepositories();
 
@@ -52,7 +50,7 @@ public class RepoQueryService {
         return gitHubRepoResponse.getData().getSearch().getEdges()
                 .stream()
                 .map(edge -> edge.getNode())
-                .filter(node -> node.getOpenIssuesCount() > 0 && node.getGoodFirstIssueCount() > 0)
+                .filter(node -> node.getOpenIssuesCount() > 0 && node.getBeginnerIssueCount() > 0)
                 .map(this::saveIfNotExists)
                 .collect(Collectors.toList());
     }
@@ -83,6 +81,7 @@ public class RepoQueryService {
                 .closedIssues(node.getClosedIssues() != null ? node.getClosedIssues().getTotalCount() : 0)
                 .watchers(node.getWatchers() != null ? node.getWatchers().getTotalCount() : 0)
                 .lastGithubUpdate(node.getUpdatedAt() != null ? OffsetDateTime.parse(node.getUpdatedAt()).toLocalDateTime() : null)
+                .beginnerIssueCount(node.getBeginnerIssueCount())
                 .build();
     }
 
@@ -111,15 +110,13 @@ public class RepoQueryService {
 
         for (String lang : languages) {
             for (String domain : domains) {
-                // ✅ 캐시에서 조회
                 List<Repo> cached = repoCacheService.getReposByLanguageAndDomain(lang, domain);
                 if (cached != null) {
-                    log.info("✅ 캐시 히트: {} + {}", lang, domain);
+                    log.info("Cache Hit: {} + {}", lang, domain);
                     cached.forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
                     continue;
                 }
 
-                // ✅ 캐시에 없으면 GitHub에서 가져옴
                 String query = GitHubQueryBuilder.buildSearchQuery(List.of(lang), List.of(domain));
                 GitHubRepoResponse response = gitHubGraphQLService.searchRepositories(query);
                 List<Repo> parsed = parseResponseAndSave(response).stream().limit(10).toList();
@@ -134,18 +131,12 @@ public class RepoQueryService {
         }
 
         List<Repo> sorted = repoMap.values().stream()
-                .sorted(Comparator.comparingInt(r -> -1 * (r.getStars() + getGoodFirstIssueCountSafe(r.getGithubUrl()))))
-                .limit(10)
+                .sorted(Comparator.comparingInt(r -> -1 * (r.getStars() + r.getBeginnerIssueCount())))
+                .limit(20)
                 .toList();
 
-        // ✅ member별 캐시 저장 (선택적)
         repoCacheService.saveRecommendedRepos(memberId, sorted);
         return sorted;
-    }
-
-
-    private int getGoodFirstIssueCountSafe(String githubUrl) {
-        return repoRepository.findByGithubUrl(githubUrl).map(Repo::getOpenIssues).orElse(0);
     }
 
     private List<Repo> parseResponseAndSave(GitHubRepoResponse response) {
@@ -156,7 +147,7 @@ public class RepoQueryService {
         List<Node> allNodes = response.getData().getSearch().getEdges().stream().map(GitHubRepoResponse.Edge::getNode).toList();
 
         List<Repo> strictFiltered = allNodes.stream()
-                .filter(node -> node.getGoodFirstIssueCount() >= 5)
+                .filter(node -> node.getBeginnerIssueCount() >= 5)
                 .filter(node -> node.getOpenIssuesCount() > 0)
                 .filter(node -> node.getStargazerCount() < 100000)
                 .filter(node -> isUpdatedWithin6Months(node.getUpdatedAt()))
@@ -166,7 +157,7 @@ public class RepoQueryService {
         if (strictFiltered.size() >= 5) return strictFiltered;
 
         return allNodes.stream()
-                .filter(node -> node.getGoodFirstIssueCount() >= 5)
+                .filter(node -> node.getBeginnerIssueCount() >= 5)
                 .filter(node -> node.getOpenIssuesCount() > 0)
                 .filter(node -> isUpdatedWithin6Months(node.getUpdatedAt()))
                 .map(this::saveIfNotExists)

@@ -77,9 +77,11 @@ public class GitHubQueryBuilder {
         allKeywords.addAll(domains);
 
         String query = String.join(" ", allKeywords).toLowerCase() + " sort:stars-desc";
-        log.info("🔍 Broad keywords: {}", allKeywords);
-        log.info("🔍 Fallback natural query: {}", query);
+        log.info("Broad keywords: {}", allKeywords);
+        log.info("Fallback natural query: {}", query);
         return query;
     }
+
+
 
 }
