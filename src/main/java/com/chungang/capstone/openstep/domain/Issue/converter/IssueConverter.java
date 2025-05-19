@@ -24,7 +24,7 @@ public class IssueConverter {
     public static List<IssueResponseDTO.IssueSimpleDTO> toIssueSimpleDTOs(List<Issue> issues) {
         return issues.stream()
                 .map(issue -> {
-                    String filteredBody = (issue.getBody() == null || issue.getBody().length() < 200 || !issue.getBody().matches(".*[가-힣a-zA-Z].*"))
+                    String filteredBody = (issue.getBody() == null || issue.getBody().length() < 500 || !issue.getBody().matches(".*[가-힣a-zA-Z].*"))
                             ? "내용 없음"
                             : issue.getBody();
 
@@ -33,6 +33,7 @@ public class IssueConverter {
                             .title(issue.getTitle())
                             .body(filteredBody)
                             .summary(issue.getSummary())
+                            .language(issue.getLanguage())
                             .url(issue.getGithubUrl())
                             .createdAt(issue.getCreatedAt() != null ? issue.getCreatedAt().toString() : null)
                             .updatedAt(issue.getUpdatedAt() != null ? issue.getUpdatedAt().toString() : null)
@@ -50,12 +51,19 @@ public class IssueConverter {
                 .title(issue.getTitle())
                 .body(issue.getBody())
                 .summary(issue.getSummary())
+                .language(issue.getLanguage())
                 .author(issue.getAuthor())
                 .createdAt(issue.getCreatedAt() != null ? issue.getCreatedAt().toString() : null)
                 .updatedAt(issue.getUpdatedAt() != null ? issue.getUpdatedAt().toString() : null)
                 .labels(issue.getLabels())
                 .url(issue.getGithubUrl())
                 .build();
+    }
+
+    public static List<IssueResponseDTO.IssueDetailDTO> toIssueDetailDTOs(List<Issue> issues) {
+        return issues.stream()
+                .map(IssueConverter::toIssueDetailDTO)
+                .collect(Collectors.toList());
     }
 
     public static IssueResponseDTO.IssueListDTO toIssueListDTO(List<Issue> issues) {

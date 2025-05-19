@@ -188,6 +188,7 @@ public class GitHubGraphQLService {
         }
     }
 
+    // 레포지토리 사용자 맞춤 추천을 위한 검색
     public GitHubRepoResponse searchRepositories(String query) {
         String finalQuery = String.format("""
         {
@@ -204,7 +205,10 @@ public class GitHubGraphQLService {
                   forkCount
                   openIssues: issues(states: OPEN) { totalCount }
                   closedIssues: issues(states: CLOSED) { totalCount }
-                  goodFirstIssue: issues(labels: ["good first issue"]) { totalCount }
+                  beginnerIssues: issues(labels: ["good first issue", "help wanted", "beginner friendly"]) {
+                            totalCount
+                          }
+                
                   watchers { totalCount }
                   updatedAt
                 }
@@ -230,5 +234,6 @@ public class GitHubGraphQLService {
             throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
         }
     }
+
 
 }

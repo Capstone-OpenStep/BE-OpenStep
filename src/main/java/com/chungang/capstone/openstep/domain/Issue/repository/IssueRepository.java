@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface IssueRepository extends JpaRepository<Issue, Long> {
     Optional<Issue> findByGithubUrl(String githubUrl);
+
 }

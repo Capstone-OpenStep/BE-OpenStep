@@ -1,5 +1,6 @@
 package com.chungang.capstone.openstep.domain.Repo.repository;
 
+import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
 import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,10 +11,12 @@ public interface RepoRepository extends JpaRepository<Repo, Long> {
     List<Repo> findTop10ByOrderByStarsDesc();
     Optional<Repo> findByGithubUrl(String githubUrl);
     Optional<Repo> findByRepoName(String name);
+    Optional<Repo> findByOwnerNameAndRepoName(String name, String owner);
 
     List<Repo> findTop10ByRepoNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrderByStarsDesc(
             String nameKeyword, String descKeyword
     );
+
 
 }
 

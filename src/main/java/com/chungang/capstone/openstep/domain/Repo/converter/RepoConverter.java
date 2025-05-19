@@ -20,6 +20,7 @@ public class RepoConverter {
                         .forks(repo.getForks())
                         .openIssues(repo.getOpenIssues())
                         .closedIssues(repo.getClosedIssues())
+                        .beginnerIssueCount(repo.getBeginnerIssueCount())
                         .githubUrl(repo.getGithubUrl())
                         .description(repo.getDescription())
                         .build())
@@ -40,6 +41,7 @@ public class RepoConverter {
                 .forks(repo.getForks())
                 .openIssues(repo.getOpenIssues())
                 .closedIssues(repo.getClosedIssues())
+                .beginnerIssueCount(repo.getBeginnerIssueCount())
                 .githubUrl(repo.getGithubUrl())
                 .readmeUrl(repo.getReadmeUrl())
                 .build();
