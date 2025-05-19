@@ -50,7 +50,7 @@ public class GitHubStatusResolverServiceImpl implements GitHubStatusResolverServ
         if (pr.mergedAt()!=null) {
             return TaskStatus.MERGED;
             }
-        else if (Objects.equals(pr.state(), "CLOSED")) {
+        else if (Objects.equals(pr.state(), "closed")) {
             return TaskStatus.REJECTED;
         }
 
