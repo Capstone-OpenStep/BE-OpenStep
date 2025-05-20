@@ -1,10 +1,22 @@
 package com.chungang.capstone.openstep.domain.Task.dto;
 
+import java.time.LocalDateTime;
+
 import com.chungang.capstone.openstep.domain.Task.entity.TaskStatus;
 
 import lombok.Builder;
 
 public class TaskResponseDTO {
+
+	@Builder
+	public record Status(
+			Long taskId,
+			TaskStatus status,
+			LocalDateTime createdAt,
+			LocalDateTime updatedAt
+	) {
+	}
+
 	@Builder
 	public record TaskDetail(
 			Long taskId,
@@ -22,6 +34,7 @@ public class TaskResponseDTO {
 	@Builder
 	public record TaskBranchName(
 			String branchName
+
 	) {
 	}
 }

@@ -44,5 +44,13 @@ public class TaskController {
 
 		return ApiResponse.onSuccess(SuccessStatus.TASK_BRANCH_GET_OK, taskQueryService.getBranchNameByTask(taskId,member));
 	}
+	@Operation(summary = "특정 테스크의 기여 상태 조회 API", description = "특정 오픈소스 레포지토리의 기여(테스크) 상태를 조회합니다.")
+	@GetMapping("/{task-id}/status")
+	public ApiResponse<TaskResponseDTO.Status> getTaskStatus(
+		@PathVariable("task-id") Long taskId
+	) {
+		Member member= SecurityUtils.getCurrentMember();
+		return ApiResponse.onSuccess(SuccessStatus.TASK_BRANCH_GET_OK, taskQueryService.getStatusByTaskId(taskId,member));
+	}
 
 }
