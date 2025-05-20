@@ -46,8 +46,7 @@ public class IssueCommandService {
 
 		githubRepoService.forkRepository(repoOwner,repoName,member.getGithubAccessToken());
 		//2. 브랜치 이름 생성
-		//브랜치 타이틀 길이 제한 필요
-		String branchName="feature/#"+issueNumber+issue.getTitle().replaceAll(" ","-").toLowerCase();
+		String branchName="feature/#"+issueNumber;
 		Task task=Task.builder()
 			.issue(issue)
 			.member(member)
