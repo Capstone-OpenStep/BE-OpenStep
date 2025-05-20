@@ -228,4 +228,21 @@ public class IssueQueryService {
     public Issue getIssueById(Long issueId) {
         return issueRepository.findById(issueId).orElseThrow(() -> new IssueHandler(ErrorStatus.ISSUE_NOT_FOUND));
     }
+
+
+    public List<Issue> getIssuesByKeyword(Optional<String> optSearch) {
+        //Long memberId = member.getMemberId();
+        List<Issue> issues = List.of();
+        if (optSearch.isPresent() && !optSearch.get().trim().isEmpty()) {
+            String search = optSearch.get();
+            issues = issueRepository.findAllByTitleContainingIgnoreCaseOrderByCreatedAtDesc(search);
+        }
+        if (optSearch.isPresent() && !optSearch.get().trim().isEmpty()) {
+            String search = optSearch.get();
+            issues = issueRepository.findAllBySummaryContainingIgnoreCaseOrderByCreatedAtDesc(search);
+        }
+        return issues;
+    }
+
+
 }
