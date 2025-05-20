@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -43,16 +44,25 @@ public class IssueQueryService {
     public List<IssueResponseDTO.IssueSimpleDTO> getTrendingIssues() {
         List<Repo> repos = repoRepository.findAll();
         List<Issue> allIssues = new ArrayList<>();
-        for (Repo repo : repos) {
+        for (Repo repo : repoRepository.findTop10ByOrderByStarsDesc()) {
             GitHubIssueResponse res = gitHubGraphQLService.fetchIssuesByRepo(repo.getOwnerName(), repo.getRepoName());
             if (res != null && res.getData().getRepository() != null) {
                 List<Issue> issues = res.getData().getRepository().getIssues().getNodes().stream()
-                        .map(node -> saveIfNotExistsOrUpdate(node, repo))
+                        .map(node -> {
+                            Optional<Issue> existing = issueRepository.findByGithubUrl(node.getUrl());
+                            if (existing.isPresent()) {
+                                Issue issue = existing.get();
+                                LocalDateTime updated = OffsetDateTime.parse(node.getUpdatedAt()).toLocalDateTime();
+                                if (issue.getUpdatedAt().isEqual(updated)) return issue; // skip
+                            }
+                            return saveIfNotExistsOrUpdate(node, repo);
+                        })
                         .filter(Objects::nonNull)
                         .toList();
                 allIssues.addAll(issues);
             }
         }
+
         return IssueConverter.toIssueSimpleDTOs(allIssues);
     }
 
@@ -91,7 +101,7 @@ public class IssueQueryService {
                 OffsetDateTime updatedAt = OffsetDateTime.parse(node.getUpdatedAt());
                 if (updatedAt.isBefore(threeMonthsAgo)) continue;
 
-                // 🧠 중복 방지: githubUrl 기준 확인
+                // 중복 방지: githubUrl 기준 확인
                 if (issueRepository.findByGithubUrl(node.getUrl()).isPresent()) continue;
 
                 Issue issue = Issue.builder()
@@ -145,7 +155,7 @@ public class IssueQueryService {
             top20.addAll(fallback);
         }
 
-        // 🔥 요약 + 저장 (중복 방지 포함)
+        // 요약 + 저장 (중복 방지 포함)
         List<Issue> summarized = top20.stream()
                 .map(issue -> {
                     String summary;
@@ -172,21 +182,28 @@ public class IssueQueryService {
 
 
     private Issue saveIfNotExistsOrUpdate(GitHubIssueResponse.IssueNode node, Repo repo) {
-        Optional<Issue> existing = issueRepository.findByGithubUrl(node.getUrl());
+        Optional<Issue> existingOpt = issueRepository.findByGithubUrl(node.getUrl());
         String body = Optional.ofNullable(node.getBody()).orElse("내용 없음");
+        LocalDateTime githubUpdatedAt = OffsetDateTime.parse(node.getUpdatedAt()).toLocalDateTime();
 
-        if (existing.isPresent()) {
-            Issue issue = existing.get();
-            issue.setTitle(node.getTitle());
-            issue.setBody(body);
-            issue.setUpdatedAt(OffsetDateTime.parse(node.getUpdatedAt()).toLocalDateTime());
-            issue.setSummary(updateSummary(issue));
-            return issueRepository.save(issue);
-        } else {
-            Issue issue = toIssueEntity(node, repo, body);
-            return issueRepository.save(issue);
+        if (existingOpt.isPresent()) {
+            Issue existing = existingOpt.get();
+
+            // updatedAt이 동일하면 저장하지 않음
+            if (existing.getUpdatedAt() != null && existing.getUpdatedAt().isEqual(githubUpdatedAt)) {
+                return existing;
+            }
+
+            existing.setTitle(node.getTitle());
+            existing.setBody(body);
+            existing.setUpdatedAt(githubUpdatedAt);
+            existing.setSummary(updateSummary(existing));
+            return issueRepository.save(existing);
         }
+        Issue issue = toIssueEntity(node, repo, body);
+        return issueRepository.save(issue);
     }
+
 
     private Issue toIssueEntity(GitHubIssueResponse.IssueNode node, Repo repo, String body) {
         String summary = updateSummary(Issue.builder()

@@ -99,7 +99,7 @@ public class GitHubGraphQLService {
     {
       repository(owner: "%s", name: "%s") {
         name
-        issues(first: 10, orderBy: {field: UPDATED_AT, direction: DESC}) {
+        issues(first: 2, orderBy: {field: UPDATED_AT, direction: DESC}) {
           nodes {
             title
             body
