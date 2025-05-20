@@ -1,5 +1,6 @@
 package com.chungang.capstone.openstep.domain.Github.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,6 +36,8 @@ public class GitHubRepoResponse {
         private Integer forkCount;
         private Issues openIssues;
         private Issues closedIssues;
+
+        @JsonProperty("goodFirstIssue")
         private Issues beginnerIssues;
         public Watchers watchers;
         private String updatedAt;
