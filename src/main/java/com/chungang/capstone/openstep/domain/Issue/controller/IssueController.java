@@ -11,6 +11,7 @@ import com.chungang.capstone.openstep.domain.Issue.dto.IssueResponseDTO;
 import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
 import com.chungang.capstone.openstep.global.security.util.SecurityUtils;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +22,9 @@ import io.swagger.v3.oas.annotations.Operation;
 
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.Option;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -66,5 +69,17 @@ public class IssueController {
 		List<Issue> issues = issueQueryService.getSuggestedIssues(member);
 		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_SUGGEST_OK, IssueConverter.toIssueListDTO(issues));
 	}
+
+	// 키워드로 이슈 검색
+	@GetMapping("/search/keyword")
+	@Operation(summary = "키워드로 이슈 검색 API", description = "키워드로 트렌딩 또는 추천된 이슈내에서 검색합니다.")
+	public ApiResponse<IssueResponseDTO.IssueListDTO> searchIssuesByKeyword(
+		@RequestParam Optional<String> search) {
+		Member member = SecurityUtils.getCurrentMember();
+		List<Issue> issues = issueQueryService.getIssuesByKeyword(Optional.of(search.orElse("")));
+		return ApiResponse.onSuccess(SuccessStatus.ISSUE_SEARCH_BY_KEYWORD_OK, IssueConverter.toIssueListDTO(issues));
+	}
+
+
 
 }
