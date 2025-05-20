@@ -21,4 +21,13 @@ public class TaskConverter {
 				branchName(task.getBranchName()).
 				build();
 	}
+
+	public static TaskResponseDTO.Status toTaskStatus(Task task) {
+		return TaskResponseDTO.Status.builder().
+				taskId(task.getTaskId()).
+				status(task.getStatus()).
+				createdAt(task.getCreatedAt()).
+				updatedAt(task.getUpdatedAt()).
+				build();
+	}
 }

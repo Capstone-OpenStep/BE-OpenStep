@@ -39,4 +39,17 @@ public class TaskQueryService {
 			new TaskException(ErrorStatus.TASK_NOT_FOUND));
 		return TaskConverter.toTaskBranchName(task);
 	}
+
+	public TaskResponseDTO.Status getStatusByTaskId(Long taskId, Member member) {
+		Task task = taskRepository.findById(taskId).orElseThrow(() ->
+			new TaskException(ErrorStatus.TASK_NOT_FOUND));
+		TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
+
+		// DB 캐시 상태가 다르면 update
+		if (task.getStatus() != resolvedStatus) {
+			task.updateStatus(resolvedStatus);
+			taskRepository.save(task);
+		}
+		return TaskConverter.toTaskStatus(task);
+	}
 }

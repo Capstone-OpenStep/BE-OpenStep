@@ -49,7 +49,9 @@ public enum SuccessStatus implements BaseCode {
     TASK_ASSIGN_OK(HttpStatus.OK, "TASK_4001", "테스크 할당이 완료되었습니다."),
     TASK_GET_OK(HttpStatus.OK,"TASK_4002","테스크 상세조회가 완료되었습니다." ),
     TASK_BRANCH_GET_OK(HttpStatus.OK,"TASK_4003" ,"테스크 브랜치 조회가 완료되었습니다." ),
-    TASK_DELETE_OK(HttpStatus.OK,"TASK_4004","테스크 삭제가 완료되었습니다." );
+    TASK_STATUS_GET_OK(HttpStatus.OK,"TASK_4004" ,"테스크 상태 조회가 완료되었습니다." ),
+    TASK_DELETE_OK(HttpStatus.OK,"TASK_4101","테스크 삭제가 완료되었습니다." );
+
 
     private final HttpStatus httpStatus;
     private final String code;
