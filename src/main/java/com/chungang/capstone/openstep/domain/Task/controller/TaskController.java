@@ -1,5 +1,8 @@
 package com.chungang.capstone.openstep.domain.Task.controller;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,4 +56,10 @@ public class TaskController {
 		return ApiResponse.onSuccess(SuccessStatus.TASK_BRANCH_GET_OK, taskQueryService.getStatusByTaskId(taskId,member));
 	}
 
+	@GetMapping("/recent")
+	@Operation(summary = "테스크 목록 레포별 조회 API", description = "기여(테스크) 목록을 레포지토리 단위로 묶어서 반환합니다. 테스크가 최신인 순서로 정렬됩니다.")
+	public ApiResponse<Map<String , List<TaskResponseDTO.TaskBrief>>> getTaskList() {
+		Member member = SecurityUtils.getCurrentMember();
+		return ApiResponse.onSuccess(SuccessStatus.TASK_GET_OK, taskQueryService.getTaskListGroupedByRepo(member));
+	}
 }

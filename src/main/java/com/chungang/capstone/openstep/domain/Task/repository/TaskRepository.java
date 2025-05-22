@@ -1,5 +1,6 @@
 package com.chungang.capstone.openstep.domain.Task.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
@@ -11,4 +12,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 	Task findByMemberAndIssue(Member member, Issue issue);
+
+	List<Task> findAllByMember(Member member);
 }
