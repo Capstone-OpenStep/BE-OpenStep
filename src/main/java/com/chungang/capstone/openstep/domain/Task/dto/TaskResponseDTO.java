@@ -1,6 +1,7 @@
 package com.chungang.capstone.openstep.domain.Task.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.chungang.capstone.openstep.domain.Task.entity.TaskStatus;
 
@@ -35,6 +36,20 @@ public class TaskResponseDTO {
 	public record TaskBranchName(
 			String branchName
 
+	) {
+	}
+	public record RepoTaskGroupDTO(
+		String repository,
+		List<TaskBrief> tasks
+	) {}
+
+	@Builder
+	public record TaskBrief(
+			Long taskId,
+			String title,
+			TaskStatus status,
+			String createdAt,
+			String updatedAt
 	) {
 	}
 }

@@ -30,4 +30,14 @@ public class TaskConverter {
 				updatedAt(task.getUpdatedAt()).
 				build();
 	}
+
+	public static TaskResponseDTO.TaskBrief toTaskBrief(Task task) {
+		return TaskResponseDTO.TaskBrief.builder()
+				.taskId(task.getTaskId())
+				.title(task.getIssue().getTitle())
+				.status(task.getStatus())
+				.createdAt(task.getCreatedAt().toString())
+				.updatedAt(task.getUpdatedAt().toString())
+				.build();
+	}
 }
