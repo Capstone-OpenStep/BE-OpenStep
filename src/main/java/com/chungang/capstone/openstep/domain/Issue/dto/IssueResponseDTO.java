@@ -32,6 +32,7 @@ public class IssueResponseDTO {
     @NoArgsConstructor
     public static class IssueDetailDTO {
         private Long issueId;
+        private Long repoId;
         private String title;
         private String body;
         private String summary;
