@@ -48,6 +48,7 @@ public class IssueConverter {
     public static IssueResponseDTO.IssueDetailDTO toIssueDetailDTO(Issue issue) {
         return IssueResponseDTO.IssueDetailDTO.builder()
                 .issueId(issue.getIssueId())
+                .repoId(issue.getRepo().getRepoId())
                 .title(issue.getTitle())
                 .body(issue.getBody())
                 .summary(issue.getSummary())
