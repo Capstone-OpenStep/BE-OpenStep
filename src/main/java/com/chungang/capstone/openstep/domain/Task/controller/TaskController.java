@@ -58,8 +58,8 @@ public class TaskController {
 
 	@GetMapping("/recent")
 	@Operation(summary = "테스크 목록 레포별 조회 API", description = "기여(테스크) 목록을 레포지토리 단위로 묶어서 반환합니다. 테스크가 최신인 순서로 정렬됩니다.")
-	public ApiResponse<Map<String , List<TaskResponseDTO.TaskBrief>>> getTaskList() {
+	public ApiResponse<List<TaskResponseDTO.RepoTaskGroupDTO>> getTaskList() {
 		Member member = SecurityUtils.getCurrentMember();
-		return ApiResponse.onSuccess(SuccessStatus.TASK_GET_OK, taskQueryService.getTaskListGroupedByRepo(member));
+		return ApiResponse.onSuccess(SuccessStatus.TASK_GET_OK, taskQueryService.getRepoTaskGroup(member));
 	}
 }

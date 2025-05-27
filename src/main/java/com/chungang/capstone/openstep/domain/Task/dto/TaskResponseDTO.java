@@ -38,8 +38,14 @@ public class TaskResponseDTO {
 
 	) {
 	}
+	@Builder
 	public record RepoTaskGroupDTO(
+		Long repoId,
 		String repository,
+		String description,
+		String language,
+		Integer starCount,
+		LocalDateTime last_github_update,
 		List<TaskBrief> tasks
 	) {}
 

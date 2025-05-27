@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.chungang.capstone.openstep.domain.Github.service.GitHubStatusResolverService;
 import com.chungang.capstone.openstep.domain.Member.entity.Member;
+import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
 import com.chungang.capstone.openstep.domain.Task.converter.TaskConverter;
 import com.chungang.capstone.openstep.domain.Task.dto.TaskResponseDTO;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
@@ -58,31 +59,64 @@ public class TaskQueryService {
 		return TaskConverter.toTaskStatus(task);
 	}
 
-	public Map<String , List<TaskResponseDTO.TaskBrief>> getTaskListGroupedByRepo(Member member) {
+	// public Map<String , List<TaskResponseDTO.TaskBrief>> getTaskListGroupedByRepo(Member member) {
+	// 	List<Task> taskList = taskRepository.findAllByMember(member);
+	// 	//repository 별로 모으기
+	//
+	// 	// 1. 그룹핑
+	// 	Map<String , List<Task>> grouped = taskList.stream()
+	// 		.collect(Collectors.groupingBy(task -> task.getIssue().getRepo().getRepoName()));
+	//
+	// 	// 2. 그룹을 최신 Task 기준으로 정렬
+	// 	return grouped.entrySet().stream()
+	// 		.sorted((e1, e2) -> {
+	// 			// 각 그룹 내에서 가장 최신 Task의 updatedAt 비교
+	// 			Task latest1 = e1.getValue().stream().max((a, b) -> a.getUpdatedAt().compareTo(b.getUpdatedAt())).orElse(null);
+	// 			Task latest2 = e2.getValue().stream().max((a, b) -> a.getUpdatedAt().compareTo(b.getUpdatedAt())).orElse(null);
+	// 			if (latest1 == null || latest2 == null) return 0;
+	// 			return latest2.getUpdatedAt().compareTo(latest1.getUpdatedAt()); // 최신순
+	// 		})
+	// 		.collect(Collectors.toMap(
+	// 			Map.Entry::getKey,
+	// 			e -> e.getValue().stream()
+	// 				.sorted((a, b) -> b.getUpdatedAt().compareTo(a.getUpdatedAt()))
+	// 				.map(TaskConverter::toTaskBrief)
+	// 				.toList(),
+	// 			(a, b) -> a,
+	// 			LinkedHashMap::new // insertion order 유지
+	// 		));
+	// }
+
+	public List<TaskResponseDTO.RepoTaskGroupDTO> getRepoTaskGroup(Member member) {
+
 		List<Task> taskList = taskRepository.findAllByMember(member);
-		//repository 별로 모으기
 
-		// 1. 그룹핑
-		Map<String , List<Task>> grouped = taskList.stream()
-			.collect(Collectors.groupingBy(task -> task.getIssue().getRepo().getRepoName()));
+		//레포 끼리 그룹핑
+		Map<Repo, List<Task>> groupedTasks = taskList.stream()
+			.collect(Collectors.groupingBy(task -> task.getIssue().getRepo()));
 
-		// 2. 그룹을 최신 Task 기준으로 정렬
-		return grouped.entrySet().stream()
+		//레포의 github 업데이트 시간 기준으로 정렬
+		return groupedTasks.entrySet().stream()
 			.sorted((e1, e2) -> {
-				// 각 그룹 내에서 가장 최신 Task의 updatedAt 비교
-				Task latest1 = e1.getValue().stream().max((a, b) -> a.getUpdatedAt().compareTo(b.getUpdatedAt())).orElse(null);
-				Task latest2 = e2.getValue().stream().max((a, b) -> a.getUpdatedAt().compareTo(b.getUpdatedAt())).orElse(null);
-				if (latest1 == null || latest2 == null) return 0;
-				return latest2.getUpdatedAt().compareTo(latest1.getUpdatedAt()); // 최신순
+				Repo repo1 = e1.getKey();
+				Repo repo2 = e2.getKey();
+				return repo2.getLastGithubUpdate().compareTo(repo1.getLastGithubUpdate());
 			})
-			.collect(Collectors.toMap(
-				Map.Entry::getKey,
-				e -> e.getValue().stream()
-					.sorted((a, b) -> b.getUpdatedAt().compareTo(a.getUpdatedAt()))
+			.map(entry -> {
+				Repo repo = entry.getKey();
+				List<TaskResponseDTO.TaskBrief> taskBriefs = entry.getValue().stream()
 					.map(TaskConverter::toTaskBrief)
-					.toList(),
-				(a, b) -> a,
-				LinkedHashMap::new // insertion order 유지
-			));
+					.collect(Collectors.toList());
+				return TaskResponseDTO.RepoTaskGroupDTO.builder()
+					.repoId(repo.getRepoId())
+					.repository(repo.getRepoName())
+					.description(repo.getDescription())
+					.language(repo.getLanguage())
+					.starCount(repo.getStars())
+					.last_github_update(repo.getLastGithubUpdate())
+					.tasks(taskBriefs)
+					.build();
+			})
+			.collect(Collectors.toList());
 	}
 }
