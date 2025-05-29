@@ -74,6 +74,7 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
         //config.setAllowedOriginPatterns(List.of("*", "http://localhost:3000"));
         config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedOrigins(List.of("https://meek-begonia-417106.netlify.app"));
         //config.setAllowedOrigins(List.of("http://localhost:3000"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
