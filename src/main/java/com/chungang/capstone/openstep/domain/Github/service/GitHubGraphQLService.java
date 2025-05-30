@@ -47,6 +47,7 @@ public class GitHubGraphQLService {
                   }
                   owner {
                     login
+                    avatarUrl
                   }
                   forkCount
                   openIssues: issues(states: OPEN) {
@@ -106,7 +107,10 @@ public class GitHubGraphQLService {
             url
             createdAt
             updatedAt
-            author { login }
+            author { 
+                login 
+                avatarUrl
+            }
             labels(first: 10) {
               nodes { name }
             }
@@ -201,7 +205,10 @@ public class GitHubGraphQLService {
                   url
                   stargazerCount
                   primaryLanguage { name }
-                  owner { login }
+                  owner {
+                    login
+                    avatarUrl 
+                  }
                   forkCount
                   openIssues: issues(states: OPEN) { totalCount }
                   closedIssues: issues(states: CLOSED) { totalCount }

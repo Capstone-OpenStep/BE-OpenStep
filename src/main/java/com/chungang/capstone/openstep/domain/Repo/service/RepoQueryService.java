@@ -76,6 +76,7 @@ public class RepoQueryService {
                 .stars(node.getStargazerCount())
                 .githubUrl(node.getUrl())
                 .ownerName(node.getOwner() != null ? node.getOwner().getLogin() : null)
+                .ownerAvatarUrl(node.getOwner() != null ? node.getOwner().getAvatarUrl() : null)
                 .forks(node.getForkCount() != null ? node.getForkCount() : 0)
                 .openIssues(node.getOpenIssues() != null ? node.getOpenIssues().getTotalCount() : 0)
                 .closedIssues(node.getClosedIssues() != null ? node.getClosedIssues().getTotalCount() : 0)

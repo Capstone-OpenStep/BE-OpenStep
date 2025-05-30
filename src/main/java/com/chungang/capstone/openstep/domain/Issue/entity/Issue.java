@@ -43,6 +43,8 @@ public class Issue extends BaseEntity {
 
     private String author;
 
+    private String authorAvatarUrl;
+
     @Column(columnDefinition = "TEXT")
     private String summary;
 

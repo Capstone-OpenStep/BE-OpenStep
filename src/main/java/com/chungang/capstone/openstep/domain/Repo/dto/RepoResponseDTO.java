@@ -18,6 +18,7 @@ public class RepoResponseDTO {
         private String repoName;
         private String summary;
         private String ownerName;
+        private String ownerAvatarUrl;
         private String language;
         private Integer stars;
         private Integer watchers;
@@ -38,6 +39,7 @@ public class RepoResponseDTO {
         private String repoName;
         private String summary;
         private String ownerName;
+        private String ownerAvatarUrl;
         private String description;
         private String language;
         private int stars;

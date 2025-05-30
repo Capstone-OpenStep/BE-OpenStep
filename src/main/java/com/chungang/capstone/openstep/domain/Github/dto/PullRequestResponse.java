@@ -20,6 +20,7 @@ public class PullRequestResponse {
 		String url,
 		String createdAt,
 		Author author,
+		String authorAvatarUrl,
 		LabelWrapper labels
 	) {
 		public List<String> flatLabelNames() {

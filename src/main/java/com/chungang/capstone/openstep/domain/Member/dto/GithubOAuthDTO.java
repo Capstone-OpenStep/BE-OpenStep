@@ -17,6 +17,7 @@ public class GithubOAuthDTO {
 	) {}
 
 	public record GithubUserInfoRes(
-		String login
+		String login,
+		String avatar_url
 	){}
 }

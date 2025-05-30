@@ -116,6 +116,7 @@ public class IssueQueryService {
                         .summary(null)
                         .githubUrl(node.getUrl())
                         .author(node.getAuthor() != null ? node.getAuthor().getLogin() : "Unknown")
+                        .authorAvatarUrl(node.getAuthor() != null ? node.getAuthor().getAvatarUrl() : null)
                         .createdAt(OffsetDateTime.parse(node.getCreatedAt()).atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
                         .updatedAt(updatedAt.atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
                         .language(repo.getLanguage())
@@ -220,6 +221,7 @@ public class IssueQueryService {
                 .summary(summary)
                 .githubUrl(node.getUrl())
                 .author(node.getAuthor() != null ? node.getAuthor().getLogin() : "unknown")
+                .authorAvatarUrl(node.getAuthor() != null ? node.getAuthor().getAvatarUrl() : null)
                 .labels(new ArrayList<>(
                         node.getLabels() != null
                                 ? node.getLabels().getNodes().stream().map(GitHubIssueResponse.LabelNode::getName).toList()

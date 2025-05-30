@@ -81,5 +81,6 @@ public class GitHubRepoResponse {
     @Getter
     public static class Owner {
         private String login;
+        private String avatarUrl;
     }
 }

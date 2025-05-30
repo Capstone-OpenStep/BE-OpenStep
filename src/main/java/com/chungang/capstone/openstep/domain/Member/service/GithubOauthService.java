@@ -81,6 +81,7 @@ public class GithubOauthService {
 				//임시로 깃허브id로 이메일을 설정->JWT관련 오류
 				.email(githubUser.login())
 				.githubAccessToken(githubAccessToken)
+					.profileImageUrl(githubUser.avatar_url())
 				.build();
 			memberRepository.save(member);
 			isNewUser = true;
@@ -88,6 +89,7 @@ public class GithubOauthService {
 		else {
 			// 회원이 존재하면 accessToken 업데이트
 			member.updateGithubAccessToken(githubAccessToken);
+			member.setProfileImageUrl(githubUser.avatar_url());
 			memberRepository.save(member);
 		}
 		// 3. JWT 토큰 생성
