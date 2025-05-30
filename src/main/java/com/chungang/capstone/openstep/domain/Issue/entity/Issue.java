@@ -1,5 +1,6 @@
 package com.chungang.capstone.openstep.domain.Issue.entity;
 
+import com.chungang.capstone.openstep.domain.Bookmark.entity.Bookmark;
 import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
 import com.chungang.capstone.openstep.domain.common.BaseEntity;
@@ -64,6 +65,9 @@ public class Issue extends BaseEntity {
 
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Bookmark> bookmarks = new ArrayList<>();
 
 
     @Override

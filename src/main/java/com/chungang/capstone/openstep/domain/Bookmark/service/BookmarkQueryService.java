@@ -21,8 +21,8 @@ public class BookmarkQueryService {
     private final BookmarkRepository bookmarkRepository;
     private final MemberRepository memberRepository;
 
-    public Long findBookmarkIdByMemberAndRepo(Long memberId, Long repoId) {
-        return bookmarkRepository.findBookmarkIdByMemberAndRepo(memberId, repoId);
+    public Long findBookmarkIdByMemberAndIssue(Long memberId, Long issueId) {
+        return bookmarkRepository.findBookmarkIdByMemberAndIssue(memberId, issueId);
     }
 
     public List<Bookmark> getBookmarkList(Long memberId) {

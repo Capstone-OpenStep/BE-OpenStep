@@ -46,13 +46,13 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 레포지토리 관련 에러 2000
     REPO_NOT_FOUND(HttpStatus.NOT_FOUND, "REPO_2001", "존재하지 않는 레포지토리입니다."),
-    REPO_BOOKMARK_DUPLICATE(HttpStatus.CONFLICT, "REPO_2002", "이미 북마크한 레포지토리입니다."),
-    REPO_BOOKMARK_NOT_FOUND(HttpStatus.NOT_FOUND, "REPO_2003", "북마크한 레포지토리가 아닙니다."),
-    REPO_NO_INTEREST_INFO(HttpStatus.NOT_FOUND, "REPO_2004", "관심 레포지토리 정보가 없습니다."),
+    REPO_NO_INTEREST_INFO(HttpStatus.NOT_FOUND, "REPO_2002", "관심 레포지토리 정보가 없습니다."),
 
     // 이슈 관련 에러 3000
     ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "ISSUE_3001", "존재하지 않는 이슈입니다."),
     ISSUE_NO_INTEREST_INFO(HttpStatus.NOT_FOUND, "ISSUE_3002", "관심 이슈 정보가 없습니다."),
+    ISSUE_BOOKMARK_DUPLICATE(HttpStatus.CONFLICT, "ISSUE_3003", "이미 북마크한 이슈입니다."),
+    ISSUE_BOOKMARK_NOT_FOUND(HttpStatus.NOT_FOUND, "ISSUE_3004", "북마크한 이슈가 아닙니다."),
 
     // 테스크 관련 에러 4000
     TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "TASK_4001", "존재하지 않는 테스크입니다."),

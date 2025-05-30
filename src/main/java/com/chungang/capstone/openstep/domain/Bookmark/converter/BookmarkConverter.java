@@ -2,8 +2,8 @@ package com.chungang.capstone.openstep.domain.Bookmark.converter;
 
 import com.chungang.capstone.openstep.domain.Bookmark.dto.BookmarkResponseDTO;
 import com.chungang.capstone.openstep.domain.Bookmark.entity.Bookmark;
+import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
 import com.chungang.capstone.openstep.domain.Member.entity.Member;
-import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,15 +17,15 @@ public class BookmarkConverter {
         return BookmarkResponseDTO.CreateBookmarkResultDTO.builder()
                 .bookmarkId(bookmark.getBookmarkId())
                 .memberId(bookmark.getMember().getMemberId())
-                .repoId(bookmark.getRepo().getRepoId())
+                .issueId(bookmark.getIssue().getIssueId())
                 .createdAt(LocalDateTime.now())
                 .build();
     }
     // Service
-    public static Bookmark toBookmark(Member member, Repo repo) {
+    public static Bookmark toBookmark(Member member, Issue issue) {
         return Bookmark.builder()
                 .member(member)
-                .repo(repo)
+                .issue(issue)
                 .build();
     }
 
@@ -40,14 +40,17 @@ public class BookmarkConverter {
         return BookmarkResponseDTO.BookmarkPreviewDTO.builder()
                 .memberId(bookmark.getMember().getMemberId())
                 .bookmarkId(bookmark.getBookmarkId())
+                .issueId(bookmark.getIssue().getIssueId())
+                .issueTitle(bookmark.getIssue().getTitle())
                 .repoId(bookmark.getRepo().getRepoId())
                 .repoName(bookmark.getRepo().getRepoName())
+                .ownerName(bookmark.getRepo().getOwnerName())
                 .language(bookmark.getRepo().getLanguage())
                 .stars(bookmark.getRepo().getStars())
-                .forks(bookmark.getRepo().getForks())
                 .githubUrl(bookmark.getRepo().getGithubUrl())
                 .isBookmarked(true)
                 .createdAt(bookmark.getCreatedAt())
+                .updatedAt(bookmark.getUpdatedAt())
                 .build();
     }
 
