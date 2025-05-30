@@ -64,6 +64,7 @@ public class GitHubIssueResponse {
     @Getter
     public static class Author {
         private String login;
+        private String avatarUrl;
     }
 
     @Getter
@@ -84,6 +85,7 @@ public class GitHubIssueResponse {
     @Getter
     public static class Owner {
         private String login;
+        private String avatarUrl;
     }
 
 }

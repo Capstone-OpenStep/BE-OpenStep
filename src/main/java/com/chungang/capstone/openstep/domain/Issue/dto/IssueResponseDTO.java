@@ -22,6 +22,7 @@ public class IssueResponseDTO {
         private String createdAt;
         private String updatedAt;
         private String author;
+        private String authorAvatarUrl;
         private List<String> labels;
     }
 
@@ -41,6 +42,7 @@ public class IssueResponseDTO {
         private String createdAt;
         private String updatedAt;
         private String author;
+        private String authorAvatarUrl;
         private List<String> labels;
     }
 

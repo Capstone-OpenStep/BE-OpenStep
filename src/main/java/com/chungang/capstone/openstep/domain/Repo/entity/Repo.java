@@ -29,6 +29,8 @@ public class Repo extends BaseEntity {
 
     private String ownerName;
 
+    private String ownerAvatarUrl;
+
     @Column(length = 10000)
     private String description;
 

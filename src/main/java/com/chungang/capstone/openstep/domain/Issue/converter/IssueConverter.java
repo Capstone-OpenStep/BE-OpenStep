@@ -38,6 +38,7 @@ public class IssueConverter {
                             .createdAt(issue.getCreatedAt() != null ? issue.getCreatedAt().toString() : null)
                             .updatedAt(issue.getUpdatedAt() != null ? issue.getUpdatedAt().toString() : null)
                             .author(issue.getAuthor())
+                            .authorAvatarUrl(issue.getAuthorAvatarUrl())
                             .labels(issue.getLabels())
                             .build();
                 })
@@ -54,6 +55,7 @@ public class IssueConverter {
                 .summary(issue.getSummary())
                 .language(issue.getLanguage())
                 .author(issue.getAuthor())
+                .authorAvatarUrl(issue.getAuthorAvatarUrl())
                 .createdAt(issue.getCreatedAt() != null ? issue.getCreatedAt().toString() : null)
                 .updatedAt(issue.getUpdatedAt() != null ? issue.getUpdatedAt().toString() : null)
                 .labels(issue.getLabels())

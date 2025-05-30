@@ -35,6 +35,8 @@ public class Member extends BaseEntity {
 
     private String nickname;
 
+    private String profileImageUrl;
+
     private int level;
 
     private int xp;
