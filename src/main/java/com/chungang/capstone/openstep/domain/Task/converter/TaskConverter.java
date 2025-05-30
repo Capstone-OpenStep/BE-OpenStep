@@ -1,5 +1,7 @@
 package com.chungang.capstone.openstep.domain.Task.converter;
 
+import java.util.List;
+
 import com.chungang.capstone.openstep.domain.Task.dto.TaskResponseDTO;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
 
@@ -40,5 +42,11 @@ public class TaskConverter {
 				.createdAt(task.getCreatedAt().toString())
 				.updatedAt(task.getUpdatedAt().toString())
 				.build();
+	}
+
+	public static List<TaskResponseDTO.TaskBrief> taskToTaskBriefs(List<Task> updatedTasks) {
+		return updatedTasks.stream()
+			.map(TaskConverter::toTaskBrief)
+			.toList();
 	}
 }

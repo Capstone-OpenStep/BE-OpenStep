@@ -3,6 +3,7 @@ package com.chungang.capstone.openstep.domain.Task.service;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -118,5 +119,22 @@ public class TaskQueryService {
 					.build();
 			})
 			.collect(Collectors.toList());
+	}
+
+	public List<Task> updateAllTaskStatus(Member member) {
+		List<Task> tasks = taskRepository.findAllByMember(member);
+		List<Task> updatedTasks = tasks.stream()
+			.map(task -> {
+				TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
+				if (task.getStatus() != resolvedStatus) {
+					task.updateStatus(resolvedStatus);
+					return Optional.of(taskRepository.save(task));
+				}
+				return Optional.<Task>empty();
+			})
+			.flatMap(Optional::stream) // Optional 중 값 있는 것만 추출
+			.collect(Collectors.toList());
+
+		return updatedTasks;
 	}
 }
