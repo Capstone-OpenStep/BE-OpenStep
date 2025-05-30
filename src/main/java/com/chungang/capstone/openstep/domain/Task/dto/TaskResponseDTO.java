@@ -54,6 +54,7 @@ public class TaskResponseDTO {
 			Long taskId,
 			String title,
 			TaskStatus status,
+			String branchName,
 			String createdAt,
 			String updatedAt
 	) {

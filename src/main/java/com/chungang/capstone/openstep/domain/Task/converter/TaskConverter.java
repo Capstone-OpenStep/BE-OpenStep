@@ -35,6 +35,7 @@ public class TaskConverter {
 		return TaskResponseDTO.TaskBrief.builder()
 				.taskId(task.getTaskId())
 				.title(task.getIssue().getTitle())
+				.branchName(task.getBranchName())
 				.status(task.getStatus())
 				.createdAt(task.getCreatedAt().toString())
 				.updatedAt(task.getUpdatedAt().toString())
