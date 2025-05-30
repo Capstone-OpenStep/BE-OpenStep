@@ -17,7 +17,9 @@ public class BookmarkConverter {
         return BookmarkResponseDTO.CreateBookmarkResultDTO.builder()
                 .bookmarkId(bookmark.getBookmarkId())
                 .memberId(bookmark.getMember().getMemberId())
+                .repoId(bookmark.getRepo().getRepoId())
                 .issueId(bookmark.getIssue().getIssueId())
+                .issueTitle(bookmark.getIssue().getTitle())
                 .createdAt(LocalDateTime.now())
                 .build();
     }
@@ -26,6 +28,7 @@ public class BookmarkConverter {
         return Bookmark.builder()
                 .member(member)
                 .issue(issue)
+                .repo(issue.getRepo())
                 .build();
     }
 

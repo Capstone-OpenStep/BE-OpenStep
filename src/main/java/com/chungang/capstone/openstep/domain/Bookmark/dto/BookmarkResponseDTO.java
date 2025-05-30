@@ -16,7 +16,9 @@ public class BookmarkResponseDTO {
     public static class CreateBookmarkResultDTO {
         Long bookmarkId;
         Long memberId;
+        Long repoId;
         Long issueId;
+        String issueTitle;
         LocalDateTime createdAt;
     }
 
