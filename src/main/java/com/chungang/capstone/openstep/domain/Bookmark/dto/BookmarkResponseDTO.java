@@ -17,6 +17,8 @@ public class BookmarkResponseDTO {
         Long bookmarkId;
         Long memberId;
         Long repoId;
+        Long issueId;
+        String issueTitle;
         LocalDateTime createdAt;
     }
 
@@ -37,14 +39,17 @@ public class BookmarkResponseDTO {
     public static class BookmarkPreviewDTO {
         private Long memberId;
         private Long bookmarkId;
+        private Long issueId;
         private Long repoId;
         private String repoName;
+        private String ownerName;
+        private String issueTitle;
         private String language;
         private Integer stars;
-        private Integer forks;
         private String githubUrl;
         private boolean isBookmarked;
         private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
     }
 
     @Builder
