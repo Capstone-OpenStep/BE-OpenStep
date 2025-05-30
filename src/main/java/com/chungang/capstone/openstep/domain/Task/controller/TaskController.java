@@ -62,4 +62,16 @@ public class TaskController {
 		Member member = SecurityUtils.getCurrentMember();
 		return ApiResponse.onSuccess(SuccessStatus.TASK_GET_OK, taskQueryService.getRepoTaskGroup(member));
 	}
+
+	//모든 테스크의 상태를 업데이트하고 상태가 변한 테스크를 반환하는 API
+	@GetMapping("/update-status")
+	public ApiResponse<List<TaskResponseDTO.TaskBrief>> updateTaskStatus() {
+		Member member = SecurityUtils.getCurrentMember();
+		List<Task> updatedTasks = taskQueryService.updateAllTaskStatus(member);
+		if(updatedTasks.isEmpty()) {
+			return ApiResponse.onSuccess(SuccessStatus.TASK_STATUS_UPDATE_OK, List.of());
+		}
+		return ApiResponse.onSuccess(SuccessStatus.TASK_STATUS_UPDATE_OK, TaskConverter.taskToTaskBriefs(updatedTasks));
+	}
+
 }
