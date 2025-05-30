@@ -56,6 +56,8 @@ public class SecurityConfig {
                                 .requestMatchers("/issues/trending", "/issues/{issue-id}", "/summary/issue/{issue-id}").permitAll()
                                 .requestMatchers("/issues/suggest", "/issues/search/keyword").permitAll()
 
+                                // Rank 관련 접근
+                                .requestMatchers("/rank/xp", "/rank/level", "/rank/all").permitAll()
                                 // 기타 관련 접근
                                 .requestMatchers("/example/**").permitAll()
                                 .requestMatchers("/", "/api-docs/**", "/api-docs/swagger-config/*", "/swagger-ui/*", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
