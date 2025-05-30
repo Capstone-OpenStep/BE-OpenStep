@@ -79,7 +79,7 @@ public class MemberController {
 		return ApiResponse.onSuccess(SuccessStatus.MEMBER_SELECT_INTEREST_DOMAINS_OK, domainsRes);
 	}
 
-	@GetMapping("/{member-id}/languages")
+	@GetMapping("/languages")
 	@Operation(summary = "사용자 관심언어(languages) 조회 API", description = "사용자의 관심언어를 조회합니다.")
 	public ApiResponse<MemberResponseDTO.LanguagesRes> getMemberLanguages(){
 		Long memberId= SecurityUtils.getCurrentMemberId();
@@ -88,7 +88,7 @@ public class MemberController {
 		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_INTEREST_LANGUAGES_OK, languageRes);
 	}
 
-	@GetMapping("/{member-id}/domains")
+	@GetMapping("/domains")
 	@Operation(summary = "사용자 관심분야(domains) 조회 API", description = "사용자의 관심분야를 조회합니다.")
 	public ApiResponse<MemberResponseDTO.DomainsRes> getMemberDomains(){
 		Long memberId= SecurityUtils.getCurrentMemberId();
