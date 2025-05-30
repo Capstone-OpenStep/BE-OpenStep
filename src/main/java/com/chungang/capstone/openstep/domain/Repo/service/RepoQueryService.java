@@ -66,12 +66,12 @@ public class RepoQueryService {
 
     private Repo toRepoEntity(Node node) {
         String description = node.getDescription() != null ? node.getDescription() : "";
-        String summary = openAIService.rewriteNaturalKorean(openAIService.summarizeRepo(description, "README.md"));
-
+        //String summary = openAIService.rewriteNaturalKorean(openAIService.summarizeRepo(description, "README.md"));
+        String summary = "Not used";
         return Repo.builder()
                 .repoName(node.getName())
                 .description(node.getDescription())
-                .summary(summary)
+                .summary("Not used")
                 .language(node.getPrimaryLanguage() != null ? node.getPrimaryLanguage().getName() : null)
                 .stars(node.getStargazerCount())
                 .githubUrl(node.getUrl())
@@ -127,7 +127,10 @@ public class RepoQueryService {
         }
 
         if (repoMap.isEmpty()) {
-            getTrendingRepos().forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
+            String looseQuery = GitHubQueryBuilder.buildLooseSearchQuery(languages, domains);
+            GitHubRepoResponse looseResponse = gitHubGraphQLService.searchRepositories(looseQuery);
+            List<Repo> looseParsed = parseResponseAndSave(looseResponse).stream().limit(10).toList();
+            looseParsed.forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
         }
 
         List<Repo> sorted = repoMap.values().stream()
@@ -141,35 +144,107 @@ public class RepoQueryService {
 
     private List<Repo> parseResponseAndSave(GitHubRepoResponse response) {
         if (response == null || response.getData() == null || response.getData().getSearch() == null) {
+            log.warn("[!] GitHub 응답이 비어있음");
             return List.of();
         }
 
         List<Node> allNodes = response.getData().getSearch().getEdges().stream().map(GitHubRepoResponse.Edge::getNode).toList();
 
+        log.info("[*] 총 {}개의 레포지토리 검색 결과", allNodes.size());
+        for (Node node : allNodes) {
+            log.info(" {} |  {} | issues: {} | beginner: {} | updated: {}",
+                    node.getName(),
+                    node.getStargazerCount(),
+                    node.getOpenIssuesCount(),
+                    node.getBeginnerIssueCount(),
+                    node.getUpdatedAt()
+            );
+        }
+
         List<Repo> strictFiltered = allNodes.stream()
-                .filter(node -> node.getBeginnerIssueCount() >= 5)
+                .filter(node -> node.getBeginnerIssueCount() >= 1)
                 .filter(node -> node.getOpenIssuesCount() > 0)
-                .filter(node -> node.getStargazerCount() < 100000)
-                .filter(node -> isUpdatedWithin6Months(node.getUpdatedAt()))
+                //.filter(node -> node.getStargazerCount() < 100000)
+                .filter(node -> isUpdatedWithin36Months(node.getUpdatedAt()))
                 .map(this::saveIfNotExists)
                 .collect(Collectors.toList());
 
         if (strictFiltered.size() >= 5) return strictFiltered;
 
         return allNodes.stream()
-                .filter(node -> node.getBeginnerIssueCount() >= 5)
+                .filter(node -> node.getBeginnerIssueCount() >= 0)
                 .filter(node -> node.getOpenIssuesCount() > 0)
-                .filter(node -> isUpdatedWithin6Months(node.getUpdatedAt()))
+                .filter(node -> isUpdatedWithin36Months(node.getUpdatedAt()))
                 .map(this::saveIfNotExists)
                 .limit(10)
                 .collect(Collectors.toList());
     }
 
-    private boolean isUpdatedWithin6Months(String isoDate) {
+    private boolean isUpdatedWithin36Months(String isoDate) {
         try {
-            return ZonedDateTime.parse(isoDate).isAfter(ZonedDateTime.now().minusMonths(6));
+            return ZonedDateTime.parse(isoDate).isAfter(ZonedDateTime.now().minusMonths(36));
         } catch (DateTimeParseException e) {
             return false;
         }
+    }
+
+    // 언어, 도메인 분리하여 조회
+    public List<Repo> getSuggestedReposBySplitQuery(Long memberId) {
+        List<String> languages = memberLanguageRepository.findLanguagesByMemberId(memberId)
+                .stream().map(InterestLanguage::getLabel).toList();
+        List<String> domains = memberDomainRepository.findDomainsByMemberId(memberId)
+                .stream().map(InterestDomain::getLabel).toList();
+
+        if (languages.isEmpty() && domains.isEmpty()) {
+            throw new RepoHandler(ErrorStatus.REPO_NO_INTEREST_INFO);
+        }
+
+        Map<String, Repo> repoMap = new HashMap<>();
+
+        // 언어 기반 쿼리
+        for (String lang : languages) {
+            List<Repo> cached = repoCacheService.getReposByLanguageAndDomain(lang, "");
+            if (cached != null) {
+                log.info("Cache Hit: {}", lang);
+                cached.forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
+                continue;
+            }
+
+            String query = GitHubQueryBuilder.buildSearchQuery(List.of(lang), List.of());
+            GitHubRepoResponse response = gitHubGraphQLService.searchRepositories(query);
+            List<Repo> parsed = parseResponseAndSave(response).stream().limit(10).toList();
+
+            repoCacheService.saveReposByLanguageAndDomain(lang, "", parsed);
+            parsed.forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
+        }
+
+        // 도메인 기반 쿼리
+        for (String domain : domains) {
+            List<Repo> cached = repoCacheService.getReposByLanguageAndDomain("", domain);
+            if (cached != null) {
+                log.info("Cache Hit: {}", domain);
+                cached.forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
+                continue;
+            }
+
+            String query = GitHubQueryBuilder.buildSearchQuery(List.of(), List.of(domain));
+            GitHubRepoResponse response = gitHubGraphQLService.searchRepositories(query);
+            List<Repo> parsed = parseResponseAndSave(response).stream().limit(10).toList();
+
+            repoCacheService.saveReposByLanguageAndDomain("", domain, parsed);
+            parsed.forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
+        }
+
+        if (repoMap.isEmpty()) {
+            getTrendingRepos().forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
+        }
+
+        List<Repo> sorted = repoMap.values().stream()
+                .sorted(Comparator.comparingInt(r -> -1 * (r.getStars() + r.getBeginnerIssueCount())))
+                .limit(20)
+                .toList();
+
+        repoCacheService.saveRecommendedRepos(memberId, sorted);
+        return sorted;
     }
 }
