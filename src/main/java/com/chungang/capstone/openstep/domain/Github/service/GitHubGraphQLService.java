@@ -208,7 +208,6 @@ public class GitHubGraphQLService {
                   beginnerIssues: issues(labels: ["good first issue", "help wanted", "beginner friendly"]) {
                             totalCount
                           }
-                
                   watchers { totalCount }
                   updatedAt
                 }

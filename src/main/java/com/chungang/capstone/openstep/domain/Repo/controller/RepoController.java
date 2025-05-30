@@ -61,7 +61,7 @@ public class RepoController {
     @GetMapping("/suggest")
     @Operation(summary = "사용자 맞춤 레포지토리 추천 API", description = "사용자의 관심사에 맞는 오픈소스 레포지토리를 추천합니다.")
     public ApiResponse<RepoResponseDTO.RepoListDTO> suggestRepos(@RequestParam Long memberId) {
-        List<Repo> repos = repoQueryService.getSuggestedRepos(memberId);
+        List<Repo> repos = repoQueryService.getSuggestedReposBySplitQuery(memberId);
         return ApiResponse.onSuccess(SuccessStatus.REPO_GET_SUGGEST_OK, RepoConverter.toRepoListDTO(repos));
     }
 

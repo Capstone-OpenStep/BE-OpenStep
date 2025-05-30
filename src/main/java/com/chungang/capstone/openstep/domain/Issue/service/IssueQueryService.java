@@ -70,7 +70,7 @@ public class IssueQueryService {
         Long memberId = member.getMemberId();
         log.info("[ISSUE_RECOMMEND] Start for memberId = {}", memberId);
 
-        issueCacheService.evict(memberId);
+        //issueCacheService.evict(memberId);
         List<Issue> cached = issueCacheService.getRecommendedIssues(memberId);
         if (cached != null) {
             log.info("[ISSUE_RECOMMEND] Cache hit: {} issues", cached.size());
@@ -101,6 +101,11 @@ public class IssueQueryService {
                 OffsetDateTime updatedAt = OffsetDateTime.parse(node.getUpdatedAt());
                 if (updatedAt.isBefore(threeMonthsAgo)) continue;
 
+                //if (node.getState() == null || !node.getState().equalsIgnoreCase("OPEN")) continue;
+
+                String body = Optional.ofNullable(node.getBody()).orElse("").trim();
+                if (body.isBlank() || body.equalsIgnoreCase("No description provided")) continue;
+
                 // 중복 방지: githubUrl 기준 확인
                 if (issueRepository.findByGithubUrl(node.getUrl()).isPresent()) continue;
 
@@ -125,18 +130,17 @@ public class IssueQueryService {
                                         label.contains("help") ||
                                         label.contains("beginner") ||
                                         label.contains("starter") ||
-                                        label.contains("easy")
+                                        label.contains("easy") ||
+                                        label.contains("document") ||
+                                        label.contains("first")
                         );
-
                 if (isBeginnerLabel) {
                     collectedIssues.add(issue);
                 } else {
                     fallbackIssues.add(issue);
                 }
-
                 if (collectedIssues.size() >= 50) break;
             }
-
             if (collectedIssues.size() >= 50) break;
         }
 
@@ -166,9 +170,7 @@ public class IssueQueryService {
                         log.warn("[SUMMARY] OpenAI 요약 실패: {}", issue.getGithubUrl(), e);
                         summary = "요약을 생성할 수 없습니다.";
                     }
-
                     issue.setSummary(summary);
-
                     // 중복 저장 방지
                     return issueRepository.findByGithubUrl(issue.getGithubUrl())
                             .orElseGet(() -> issueRepository.save(issue));

@@ -66,21 +66,29 @@ public class GitHubQueryBuilder {
         query.add("sort:stars-desc"); // 정렬 조건
 
         String finalQuery = query.toString();
-        log.info("🔍 Explicit GitHub search query: {}", finalQuery);
+        log.info("[*] Explicit GitHub search query: {}", finalQuery);
         return finalQuery;
     }
 
-    // 자연어 키워드 기반 broad fallback 쿼리
-    public static String buildBroadQuery(List<String> languages, List<String> domains) {
-        List<String> allKeywords = new java.util.ArrayList<>();
-        allKeywords.addAll(languages);
-        allKeywords.addAll(domains);
+    public static String buildLooseSearchQuery(List<String> languages, List<String> domains) {
+        List<String> parts = new ArrayList<>();
 
-        String query = String.join(" ", allKeywords).toLowerCase() + " sort:stars-desc";
-        log.info("Broad keywords: {}", allKeywords);
-        log.info("Fallback natural query: {}", query);
+        for (String lang : languages) {
+            parts.add("language:" + lang.toLowerCase());
+        }
+
+        for (String domain : domains) {
+            String topic = domain.toLowerCase().replaceAll("[\\s/]+", "-");
+            parts.add("topic:" + topic);
+        }
+
+        String query = parts.stream().collect(Collectors.joining(" OR ")) + " sort:stars-desc";
+
+        log.info("[*] OR-based GitHub search query: {}", query);
         return query;
     }
+
+
 
 
 

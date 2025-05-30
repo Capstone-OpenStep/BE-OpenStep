@@ -55,7 +55,11 @@ public enum ErrorStatus implements BaseErrorCode {
     ISSUE_NO_INTEREST_INFO(HttpStatus.NOT_FOUND, "ISSUE_3002", "관심 이슈 정보가 없습니다."),
 
     // 테스크 관련 에러 4000
-    TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "TASK_4001", "존재하지 않는 테스크입니다.");
+    TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "TASK_4001", "존재하지 않는 테스크입니다."),
+
+    // Rank 관련 에러 5000
+    RANK_NOT_FOUND(HttpStatus.NOT_FOUND,"RANK_4001", "해당 사용자의 랭킹 정보를 찾을 수 없습니다.");
+
 
     private final HttpStatus httpStatus;
     private final String code;

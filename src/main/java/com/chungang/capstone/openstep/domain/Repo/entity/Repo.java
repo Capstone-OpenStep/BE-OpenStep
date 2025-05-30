@@ -29,7 +29,7 @@ public class Repo extends BaseEntity {
 
     private String ownerName;
 
-    @Column(length = 1000)
+    @Column(length = 10000)
     private String description;
 
     private String language;
