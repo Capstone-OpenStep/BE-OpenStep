@@ -23,6 +23,7 @@ public class IssueResponseDTO {
         private String updatedAt;
         private String author;
         private String authorAvatarUrl;
+        private boolean isBookmarked;
         private List<String> labels;
     }
 
@@ -43,6 +44,7 @@ public class IssueResponseDTO {
         private String updatedAt;
         private String author;
         private String authorAvatarUrl;
+        private boolean isBookmarked;
         private List<String> labels;
     }
 

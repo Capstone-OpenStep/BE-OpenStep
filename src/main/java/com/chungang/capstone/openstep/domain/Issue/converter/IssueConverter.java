@@ -4,7 +4,9 @@ import com.chungang.capstone.openstep.domain.Issue.dto.IssueResponseDTO;
 import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class IssueConverter {
@@ -21,9 +23,12 @@ public class IssueConverter {
 //                        .build())
 //                .collect(Collectors.toList());
 //    }
-    public static List<IssueResponseDTO.IssueSimpleDTO> toIssueSimpleDTOs(List<Issue> issues) {
+    public static List<IssueResponseDTO.IssueSimpleDTO> toIssueSimpleDTOs(List<Issue> issues, List<Long> bookmarkedIds) {
+        Set<Long> bookmarkedSet = new HashSet<>(bookmarkedIds);
+
         return issues.stream()
                 .map(issue -> {
+                    boolean isBookmarked = bookmarkedSet.contains(issue.getIssueId());
                     String filteredBody = (issue.getBody() == null || issue.getBody().length() < 500 || !issue.getBody().matches(".*[가-힣a-zA-Z].*"))
                             ? "내용 없음"
                             : issue.getBody();
@@ -39,6 +44,7 @@ public class IssueConverter {
                             .updatedAt(issue.getUpdatedAt() != null ? issue.getUpdatedAt().toString() : null)
                             .author(issue.getAuthor())
                             .authorAvatarUrl(issue.getAuthorAvatarUrl())
+                            .isBookmarked(isBookmarked)
                             .labels(issue.getLabels())
                             .build();
                 })
@@ -69,9 +75,9 @@ public class IssueConverter {
                 .collect(Collectors.toList());
     }
 
-    public static IssueResponseDTO.IssueListDTO toIssueListDTO(List<Issue> issues) {
+    public static IssueResponseDTO.IssueListDTO toIssueListDTO(List<Issue> issues, List<Long> bookmarkedIds) {
         return IssueResponseDTO.IssueListDTO.builder()
-                .issueList(toIssueSimpleDTOs(issues))
+                .issueList(toIssueSimpleDTOs(issues, bookmarkedIds))
                 .build();
     }
 
