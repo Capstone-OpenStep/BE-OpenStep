@@ -42,28 +42,28 @@ public class IssueCacheService {
         }
     }
 
-    // 새로운 관심 언어 + 관심 도메인 조합 캐시
-    public void saveIssuesByLanguageAndDomain(String lang, String domain, List<Issue> issues) {
-        String key = generateInterestKey(lang, domain);
-        try {
-            String json = objectMapper.writeValueAsString(issues);
-            redisTemplate.opsForValue().set(key, json, CACHE_EXPIRE_SECONDS, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            throw new RuntimeException("관심조합 Redis 저장 중 오류 발생", e);
-        }
+    // 해시 저장
+    public void saveInterestHash(Long memberId, String hash) {
+        String key = generateInterestHashKey(memberId);
+        redisTemplate.opsForValue().set(key, hash, CACHE_EXPIRE_SECONDS, TimeUnit.SECONDS);
     }
 
-    public List<Issue> getIssuesByLanguageAndDomain(String lang, String domain) {
-        String key = generateInterestKey(lang, domain);
-        String cached = redisTemplate.opsForValue().get(key);
-        if (cached == null) return null;
-
-        try {
-            return objectMapper.readValue(cached, new TypeReference<List<Issue>>() {});
-        } catch (Exception e) {
-            throw new RuntimeException("관심조합 Redis 역직렬화 실패", e);
-        }
+    // 해시 조회
+    public String getInterestHash(Long memberId) {
+        return redisTemplate.opsForValue().get(generateInterestHashKey(memberId));
     }
+
+    // 해시 키 생성
+    private String generateInterestHashKey(Long memberId) {
+        return "recommend:issues:interest-hash:" + memberId;
+    }
+
+    // 필요 시 해시 강제 삭제 (옵션)
+    public void evictInterestHash(Long memberId) {
+        redisTemplate.delete(generateInterestHashKey(memberId));
+    }
+
+
 
     public void evict(Long memberId) {
         redisTemplate.delete(generateMemberKey(memberId));
@@ -77,48 +77,6 @@ public class IssueCacheService {
         return "recommend:issues:interest:" + lang.toLowerCase() + ":" + domain.toLowerCase();
     }
 
-    public void saveIssuesByLanguage(String lang, List<Issue> issues) {
-        String key = "recommend:issues:lang:" + lang.toLowerCase();
-        try {
-            String json = objectMapper.writeValueAsString(issues);
-            redisTemplate.opsForValue().set(key, json, CACHE_EXPIRE_SECONDS, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            throw new RuntimeException("언어 기반 Redis 저장 중 오류 발생", e);
-        }
-    }
 
-    public void saveIssuesByDomain(String domain, List<Issue> issues) {
-        String key = "recommend:issues:domain:" + domain.toLowerCase();
-        try {
-            String json = objectMapper.writeValueAsString(issues);
-            redisTemplate.opsForValue().set(key, json, CACHE_EXPIRE_SECONDS, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            throw new RuntimeException("도메인 기반 Redis 저장 중 오류 발생", e);
-        }
-    }
-
-    public List<Issue> getIssuesByLanguage(String lang) {
-        String key = "recommend:issues:lang:" + lang.toLowerCase();
-        String cached = redisTemplate.opsForValue().get(key);
-        if (cached == null) return null;
-
-        try {
-            return objectMapper.readValue(cached, new TypeReference<List<Issue>>() {});
-        } catch (Exception e) {
-            throw new RuntimeException("언어 기반 Redis 역직렬화 실패", e);
-        }
-    }
-
-    public List<Issue> getIssuesByDomain(String domain) {
-        String key = "recommend:issues:domain:" + domain.toLowerCase();
-        String cached = redisTemplate.opsForValue().get(key);
-        if (cached == null) return null;
-
-        try {
-            return objectMapper.readValue(cached, new TypeReference<List<Issue>>() {});
-        } catch (Exception e) {
-            throw new RuntimeException("도메인 기반 Redis 역직렬화 실패", e);
-        }
-    }
 
 }
