@@ -84,12 +84,13 @@ public class IssueQueryService {
         issueCacheService.evict(memberId);
         issueCacheService.evictInterestHash(memberId);
 
+        //List<Repo> suggestedRepos = repoQueryService.getSuggestedReposBySplitQuery(memberId);
         List<Repo> suggestedRepos = repoQueryService.getSuggestedRepos(memberId);
         log.info("[ISSUE_RECOMMEND] Suggested repos count = {}", suggestedRepos.size());
 
         List<Issue> collectedIssues = new ArrayList<>();
         List<Issue> fallbackIssues = new ArrayList<>();
-        OffsetDateTime threeMonthsAgo = OffsetDateTime.now().minusMonths(3);
+        OffsetDateTime threeMonthsAgo = OffsetDateTime.now().minusMonths(9);
 
         for (Repo repo : suggestedRepos) {
             String owner = repo.getOwnerName();
@@ -103,6 +104,9 @@ public class IssueQueryService {
             }
 
             List<GitHubIssueResponse.IssueNode> nodes = response.getData().getRepository().getIssues().getNodes();
+
+            int repoCollected = 0;
+            int repoFallback = 0;
 
             for (GitHubIssueResponse.IssueNode node : nodes) {
                 OffsetDateTime updatedAt = OffsetDateTime.parse(node.getUpdatedAt());
@@ -144,14 +148,18 @@ public class IssueQueryService {
                         );
                 if (isBeginnerLabel) {
                     collectedIssues.add(issue);
+                    repoCollected++;
                 } else {
                     fallbackIssues.add(issue);
+                    repoFallback++;
                 }
                 if (collectedIssues.size() >= 50) break;
             }
+            log.info("[ISSUE_RECOMMEND] Repo: {} -> Collected: {}, Fallback: {}", name, repoCollected, repoFallback);
             if (collectedIssues.size() >= 50) break;
         }
 
+        // 상위 추천 20개로 구성
         int need = 20;
         List<Issue> top20 = collectedIssues.stream()
                 .sorted(Comparator.comparing(Issue::getUpdatedAt).reversed())
@@ -168,6 +176,7 @@ public class IssueQueryService {
         }
 
         // 요약 + 저장 (중복 방지 포함)
+        log.info("[ISSUE_RECOMMEND] Recommended Issues:");
         List<Issue> summarized = top20.stream()
                 .map(issue -> {
                     String summary;
@@ -179,18 +188,21 @@ public class IssueQueryService {
                         summary = "요약을 생성할 수 없습니다.";
                     }
                     issue.setSummary(summary);
+                    log.info(" - [{}] {} ({})", issue.getIssueId(), issue.getTitle(), issue.getGithubUrl());
+
                     // 중복 저장 방지
                     return issueRepository.findByGithubUrl(issue.getGithubUrl())
                             .orElseGet(() -> issueRepository.save(issue));
                 })
                 .toList();
 
-        issueCacheService.saveRecommendedIssues(memberId, summarized);
-        log.info("[ISSUE_RECOMMEND] Final recommended issues count = {}", summarized.size());
-
-        // 저장
+        // 캐시 저장
         issueCacheService.saveRecommendedIssues(memberId, summarized);
         issueCacheService.saveInterestHash(memberId, currentHash);
+        log.info("[ISSUE_RECOMMEND] Final recommended issues count = {}", summarized.size());
+        if (summarized.size() < 20) {
+            log.warn("[ISSUE_RECOMMEND] WARNING: Recommended issue count below target ({} / 20)", summarized.size());
+        }
         return summarized;
     }
 
