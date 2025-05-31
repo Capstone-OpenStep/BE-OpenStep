@@ -65,6 +65,7 @@ public class TaskController {
 
 	//모든 테스크의 상태를 업데이트하고 상태가 변한 테스크를 반환하는 API
 	@GetMapping("/update-status")
+	@Operation(summary = "모든 테스크 상태 업데이트 API", description = "모든 기여(테스크)의 상태를 업데이트하고, 상태가 변경된 테스크 목록을 반환합니다.")
 	public ApiResponse<List<TaskResponseDTO.TaskBrief>> updateTaskStatus() {
 		Member member = SecurityUtils.getCurrentMember();
 		List<Task> updatedTasks = taskQueryService.updateAllTaskStatus(member);
@@ -73,5 +74,14 @@ public class TaskController {
 		}
 		return ApiResponse.onSuccess(SuccessStatus.TASK_STATUS_UPDATE_OK, TaskConverter.taskToTaskBriefs(updatedTasks));
 	}
+
+	@GetMapping("/statistics")
+	@Operation(summary = "테스크 통계 조회 API", description = "사용자의 기여(테스크) 통계를 조회합니다. 라벨 별로 기여 수를 반환합니다.(feature, bug, refactor, goot first issue, chore 로 구분되고, 나머지 라벨은 other로 분류됩니다.)")
+	public ApiResponse<Map<String, Long>> getTaskStatistics() {
+		Member member = SecurityUtils.getCurrentMember();
+		Map<String, Long> statistics = taskQueryService.getTaskStatistics(member);
+		return ApiResponse.onSuccess(SuccessStatus.TASK_STATISTICS_GET_OK, statistics);
+	}
+
 
 }
