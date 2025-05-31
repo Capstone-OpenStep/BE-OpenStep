@@ -39,9 +39,9 @@ public class IssueController {
 	@GetMapping("/trending")
 	@Operation(summary = "트렌딩 issue 조회 API", description = "현재 인기 있는 트렌딩한 오픈소스 이슈를 조회합니다.")
 	public ApiResponse<IssueResponseDTO.IssueListDTO> getTrendingIssues() {
-		Member member = SecurityUtils.getCurrentMember();
 		List<Issue> issues = issueQueryService.getTrendingIssues();
-		List<Long> bookmarkedIds = issueQueryService.getBookmarkedIssueIds(member.getMemberId());
+		Member member = SecurityUtils.getCurrentMemberOrNull();
+		List<Long> bookmarkedIds = (member != null) ? issueQueryService.getBookmarkedIssueIds(member.getMemberId()) : List.of(); // 비로그인시에는 빈 리스트 반환
 		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_TRENDING_OK, IssueConverter.toIssueListDTO(issues, bookmarkedIds));
 	}
 

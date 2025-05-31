@@ -37,4 +37,20 @@ public class SecurityUtils {
 		PrincipalDetails principal = (PrincipalDetails) auth.getPrincipal();
 		return principal.getMember();
 	}
+
+	public static Member getCurrentMemberOrNull() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+		if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+			return null;
+		}
+
+		try {
+			PrincipalDetails principal = (PrincipalDetails) auth.getPrincipal();
+			return principal.getMember();
+		} catch (ClassCastException e) {
+			return null;
+		}
+	}
+
 }
