@@ -2,7 +2,6 @@ package com.chungang.capstone.openstep.domain.Issue.service;
 
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubIssueResponse;
 import com.chungang.capstone.openstep.domain.Github.service.GitHubGraphQLService;
-import com.chungang.capstone.openstep.domain.Github.util.GitHubQueryBuilder;
 import com.chungang.capstone.openstep.domain.Issue.converter.IssueConverter;
 import com.chungang.capstone.openstep.domain.Issue.dto.IssueResponseDTO;
 import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
@@ -71,11 +70,19 @@ public class IssueQueryService {
         log.info("[ISSUE_RECOMMEND] Start for memberId = {}", memberId);
 
         //issueCacheService.evict(memberId);
+        // 현재 관심사 기반 해시 계산
+        String currentHash = computeInterestHash(memberId);
+        String cachedHash = issueCacheService.getInterestHash(memberId);
         List<Issue> cached = issueCacheService.getRecommendedIssues(memberId);
-        if (cached != null) {
-            log.info("[ISSUE_RECOMMEND] Cache hit: {} issues", cached.size());
+        if (cached != null && currentHash.equals(cachedHash)) {
+            log.info("[ISSUE_RECOMMEND] Cache hit: {} issues (interests same)", cached.size());
             return cached;
         }
+
+        // 관심사 바뀐 경우 캐시 무효화
+        log.info("[ISSUE_RECOMMEND] Interests changed or no cache, regenerating...");
+        issueCacheService.evict(memberId);
+        issueCacheService.evictInterestHash(memberId);
 
         List<Repo> suggestedRepos = repoQueryService.getSuggestedRepos(memberId);
         log.info("[ISSUE_RECOMMEND] Suggested repos count = {}", suggestedRepos.size());
@@ -180,6 +187,10 @@ public class IssueQueryService {
 
         issueCacheService.saveRecommendedIssues(memberId, summarized);
         log.info("[ISSUE_RECOMMEND] Final recommended issues count = {}", summarized.size());
+
+        // 저장
+        issueCacheService.saveRecommendedIssues(memberId, summarized);
+        issueCacheService.saveInterestHash(memberId, currentHash);
         return summarized;
     }
 
@@ -264,6 +275,17 @@ public class IssueQueryService {
         }
         return issues;
     }
+
+    private String computeInterestHash(Long memberId) {
+        List<String> languages = memberLanguageRepository.findLanguagesByMemberId(memberId)
+                .stream().map(InterestLanguage::getLabel).sorted().toList();
+        List<String> domains = memberDomainRepository.findDomainsByMemberId(memberId)
+                .stream().map(InterestDomain::getLabel).sorted().toList();
+
+        String combined = String.join(",", languages) + "|" + String.join(",", domains);
+        return Integer.toHexString(combined.hashCode());  // 문자열 해시 (간결하게)
+    }
+
 
 
 }

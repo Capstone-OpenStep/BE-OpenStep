@@ -33,7 +33,6 @@ public class RepoQueryService {
     private final MemberLanguageRepository memberLanguageRepository;
     private final MemberDomainRepository memberDomainRepository;
     private final GitHubGraphQLService gitHubGraphQLService;
-    private final OpenAIService openAIService;
     private final RedisTemplate<String, Object> redisTemplate;
     private final RepoCacheService repoCacheService;
 

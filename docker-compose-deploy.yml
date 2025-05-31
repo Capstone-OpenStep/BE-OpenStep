@@ -1,32 +1,36 @@
-#version: '3'
-#
-#services:
-#  app:
-#    build: .
-#    image: harryest/openstep:dev
-#    ports:
-#      - "8081:8080"
-#    environment:
-#      SPRING_DATASOURCE_URL: jdbc:mysql://openstep.cpgoe06g6rjt.ap-northeast-2.rds.amazonaws.com:3306/openstep_db
-#      SPRING_DATASOURCE_USERNAME: root
-#      SPRING_DATASOURCE_PASSWORD: Capstoneteam01!
-#    depends_on:
-#      - redis
-#    networks:
-#      - openstep-network
-#
-#  redis:
-#    image: redis:7.0
-#    container_name: openstep-redis
-#    ports:
-#      - "6379:6379"
-#    networks:
-#      - openstep-network
-#    volumes:
-#      - redis_data:/data
-#
-#networks:
-#  openstep-network:
-#
-#volumes:
-#  redis_data:
+version: '3'
+
+services:
+  app:
+    build: .
+    image: harryest/openstep:dev
+    container_name: openstep-app
+    ports:
+      - "443:443"
+    volumes:
+      - /home/ubuntu/keystore.p12:/app/keystore.p12
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://openstep.cpgoe06g6rjt.ap-northeast-2.rds.amazonaws.com:3306/openstep_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Capstoneteam01!
+    depends_on:
+      - redis
+    networks:
+      - openstep_network
+
+  redis:
+    image: redis:7.0
+    container_name: openstep-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - openstep_network
+    volumes:
+      - redis_data:/data
+
+networks:
+  openstep_network:
+    driver: bridge
+
+volumes:
+  redis_data:

@@ -30,17 +30,6 @@ public class RepoCacheService {
         }
     }
 
-    public List<Repo> getRecommendedRepos(Long memberId) {
-        String key = generateMemberKey(memberId);
-        String cached = redisTemplate.opsForValue().get(key);
-        if (cached == null) return null;
-
-        try {
-            return objectMapper.readValue(cached, new TypeReference<List<Repo>>() {});
-        } catch (Exception e) {
-            throw new RuntimeException("Redis 조회 중 역직렬화 실패", e);
-        }
-    }
 
     // 새로운 관심 언어 + 관심 도메인 조합 캐시
     public void saveReposByLanguageAndDomain(String lang, String domain, List<Repo> repos) {
