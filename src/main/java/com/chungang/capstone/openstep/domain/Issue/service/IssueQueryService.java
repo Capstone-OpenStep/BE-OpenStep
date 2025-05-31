@@ -1,5 +1,6 @@
 package com.chungang.capstone.openstep.domain.Issue.service;
 
+import com.chungang.capstone.openstep.domain.Bookmark.repository.BookmarkRepository;
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubIssueResponse;
 import com.chungang.capstone.openstep.domain.Github.service.GitHubGraphQLService;
 import com.chungang.capstone.openstep.domain.Issue.converter.IssueConverter;
@@ -39,8 +40,9 @@ public class IssueQueryService {
     private final OpenAIService openAIService;
     private final MemberLanguageRepository memberLanguageRepository;
     private final MemberDomainRepository memberDomainRepository;
+    private final BookmarkRepository bookmarkRepository;
 
-    public List<IssueResponseDTO.IssueSimpleDTO> getTrendingIssues() {
+    public List<Issue> getTrendingIssues() {
         List<Repo> repos = repoRepository.findAll();
         List<Issue> allIssues = new ArrayList<>();
         for (Repo repo : repoRepository.findTop10ByOrderByStarsDesc()) {
@@ -61,8 +63,7 @@ public class IssueQueryService {
                 allIssues.addAll(issues);
             }
         }
-
-        return IssueConverter.toIssueSimpleDTOs(allIssues);
+        return allIssues;
     }
 
     public List<Issue> getSuggestedIssues(Member member) {
@@ -297,6 +298,14 @@ public class IssueQueryService {
         String combined = String.join(",", languages) + "|" + String.join(",", domains);
         return Integer.toHexString(combined.hashCode());  // 문자열 해시 (간결하게)
     }
+
+    public List<Long> getBookmarkedIssueIds(Long memberId) {
+        return bookmarkRepository.findByMember_MemberId(memberId)
+                .stream()
+                .map(bookmark -> bookmark.getIssue().getIssueId())
+                .collect(Collectors.toList());
+    }
+
 
 
 

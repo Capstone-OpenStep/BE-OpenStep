@@ -38,9 +38,11 @@ public class IssueController {
 	// 트렌딩 이슈 목록 조회 API
 	@GetMapping("/trending")
 	@Operation(summary = "트렌딩 issue 조회 API", description = "현재 인기 있는 트렌딩한 오픈소스 이슈를 조회합니다.")
-	public ApiResponse<List<IssueResponseDTO.IssueSimpleDTO>> getTrendingIssues() {
-		List<IssueResponseDTO.IssueSimpleDTO> issues = issueQueryService.getTrendingIssues();
-		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_TRENDING_OK, issues);
+	public ApiResponse<IssueResponseDTO.IssueListDTO> getTrendingIssues() {
+		Member member = SecurityUtils.getCurrentMember();
+		List<Issue> issues = issueQueryService.getTrendingIssues();
+		List<Long> bookmarkedIds = issueQueryService.getBookmarkedIssueIds(member.getMemberId());
+		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_TRENDING_OK, IssueConverter.toIssueListDTO(issues, bookmarkedIds));
 	}
 
 	// 특정 이슈 상세 조회
@@ -67,7 +69,8 @@ public class IssueController {
 	public ApiResponse<IssueResponseDTO.IssueListDTO> suggestIssues() {
 		Member member = SecurityUtils.getCurrentMember();
 		List<Issue> issues = issueQueryService.getSuggestedIssues(member);
-		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_SUGGEST_OK, IssueConverter.toIssueListDTO(issues));
+		List<Long> bookmarkedIds = issueQueryService.getBookmarkedIssueIds(member.getMemberId());
+		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_SUGGEST_OK, IssueConverter.toIssueListDTO(issues, bookmarkedIds));
 	}
 
 	// 키워드로 이슈 검색
@@ -77,7 +80,8 @@ public class IssueController {
 		@RequestParam Optional<String> search) {
 		Member member = SecurityUtils.getCurrentMember();
 		List<Issue> issues = issueQueryService.getIssuesByKeyword(Optional.of(search.orElse("")));
-		return ApiResponse.onSuccess(SuccessStatus.ISSUE_SEARCH_BY_KEYWORD_OK, IssueConverter.toIssueListDTO(issues));
+		List<Long> bookmarkedIds = issueQueryService.getBookmarkedIssueIds(member.getMemberId());
+		return ApiResponse.onSuccess(SuccessStatus.ISSUE_SEARCH_BY_KEYWORD_OK, IssueConverter.toIssueListDTO(issues, bookmarkedIds));
 	}
 
 
