@@ -119,7 +119,7 @@ public class RepoQueryService {
 
                 String query = GitHubQueryBuilder.buildSearchQuery(List.of(lang), List.of(domain));
                 GitHubRepoResponse response = gitHubGraphQLService.searchRepositories(query);
-                List<Repo> parsed = parseResponseAndSave(response).stream().limit(10).toList();
+                List<Repo> parsed = parseResponseAndSave(response).stream().limit(30).toList();
 
                 repoCacheService.saveReposByLanguageAndDomain(lang, domain, parsed);
                 parsed.forEach(repo -> repoMap.putIfAbsent(repo.getGithubUrl(), repo));
@@ -135,7 +135,7 @@ public class RepoQueryService {
 
         List<Repo> sorted = repoMap.values().stream()
                 .sorted(Comparator.comparingInt(r -> -1 * (r.getStars() + r.getBeginnerIssueCount())))
-                .limit(20)
+                .limit(30)
                 .toList();
 
         repoCacheService.saveRecommendedRepos(memberId, sorted);
@@ -163,7 +163,7 @@ public class RepoQueryService {
 
         List<Repo> strictFiltered = allNodes.stream()
                 .filter(node -> node.getBeginnerIssueCount() >= 1)
-                .filter(node -> node.getOpenIssuesCount() > 0)
+                //.filter(node -> node.getOpenIssuesCount() > 0)
                 //.filter(node -> node.getStargazerCount() < 100000)
                 .filter(node -> isUpdatedWithin36Months(node.getUpdatedAt()))
                 .map(this::saveIfNotExists)
@@ -173,10 +173,10 @@ public class RepoQueryService {
 
         return allNodes.stream()
                 .filter(node -> node.getBeginnerIssueCount() >= 0)
-                .filter(node -> node.getOpenIssuesCount() > 0)
+                //.filter(node -> node.getOpenIssuesCount() > 0)
                 .filter(node -> isUpdatedWithin36Months(node.getUpdatedAt()))
                 .map(this::saveIfNotExists)
-                .limit(10)
+                .limit(30)
                 .collect(Collectors.toList());
     }
 
