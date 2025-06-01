@@ -4,6 +4,8 @@ import com.chungang.capstone.openstep.domain.Issue.service.IssueCommandService;
 import com.chungang.capstone.openstep.domain.Issue.service.IssueQueryService;
 import com.chungang.capstone.openstep.domain.Member.entity.Member;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
+import com.chungang.capstone.openstep.domain.common.InterestLanguage;
+import com.chungang.capstone.openstep.domain.common.UpdatePeriod;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.SuccessStatus;
 import com.chungang.capstone.openstep.global.apiPayload.ApiResponse;
 import com.chungang.capstone.openstep.domain.Issue.converter.IssueConverter;
@@ -74,15 +76,29 @@ public class IssueController {
 	}
 
 	// 키워드로 이슈 검색
+//	@GetMapping("/search/keyword")
+//	@Operation(summary = "키워드로 이슈 검색 API", description = "키워드로 이슈를 검색합니다.")
+//	public ApiResponse<IssueResponseDTO.IssueListDTO> searchIssuesByKeyword(@RequestParam Optional<String> search,
+//																			@RequestParam InterestLanguage interestLanguage) {
+//		Member member = SecurityUtils.getCurrentMember();
+//		List<Issue> issues = issueQueryService.getIssuesByKeyword(Optional.of(search.orElse("")));
+//		List<Long> bookmarkedIds = issueQueryService.getBookmarkedIssueIds(member.getMemberId());
+//		return ApiResponse.onSuccess(SuccessStatus.ISSUE_SEARCH_BY_KEYWORD_OK, IssueConverter.toIssueListDTO(issues, bookmarkedIds));
+//	}
 	@GetMapping("/search/keyword")
-	@Operation(summary = "키워드로 이슈 검색 API", description = "키워드로 트렌딩 또는 추천된 이슈내에서 검색합니다.")
+	@Operation(summary = "키워드 + 필터 기반 이슈 검색", description = "키워드, 언어, 업데이트 기간 필터로 GitHub 이슈를 검색합니다.")
 	public ApiResponse<IssueResponseDTO.IssueListDTO> searchIssuesByKeyword(
-		@RequestParam Optional<String> search) {
+			@RequestParam String search,
+			@RequestParam(required = false) List<InterestLanguage> languages,
+			@RequestParam(required = false) UpdatePeriod updatePeriod
+	) {
 		Member member = SecurityUtils.getCurrentMember();
-		List<Issue> issues = issueQueryService.getIssuesByKeyword(Optional.of(search.orElse("")));
+		List<Issue> issues = issueQueryService.searchGitHubIssuesByKeywordAndFilters(search, languages, updatePeriod);
 		List<Long> bookmarkedIds = issueQueryService.getBookmarkedIssueIds(member.getMemberId());
-		return ApiResponse.onSuccess(SuccessStatus.ISSUE_SEARCH_BY_KEYWORD_OK, IssueConverter.toIssueListDTO(issues, bookmarkedIds));
+		return ApiResponse.onSuccess(SuccessStatus.ISSUE_SEARCH_BY_KEYWORD_OK,
+				IssueConverter.toIssueListDTO(issues, bookmarkedIds));
 	}
+
 
 
 

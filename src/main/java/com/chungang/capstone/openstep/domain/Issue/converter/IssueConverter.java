@@ -1,15 +1,17 @@
 package com.chungang.capstone.openstep.domain.Issue.converter;
 
+import com.chungang.capstone.openstep.domain.Github.dto.GitHubIssueResponse;
 import com.chungang.capstone.openstep.domain.Issue.dto.IssueResponseDTO;
 import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
+import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.OffsetDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class IssueConverter {
+
 //    public static List<IssueResponseDTO.TrendingIssueDTO> toTrendingDTOs(List<Issue> issues) {
 //        return issues.stream()
 //                .map(issue -> IssueResponseDTO.TrendingIssueDTO.builder()
@@ -46,6 +48,8 @@ public class IssueConverter {
                             .authorAvatarUrl(issue.getAuthorAvatarUrl())
                             .isBookmarked(isBookmarked)
                             .labels(issue.getLabels())
+                            .repoName(issue.getRepo() != null ? issue.getRepo().getRepoName() : null)
+                            .repoUrl(issue.getRepo() != null ? issue.getRepo().getGithubUrl() : null)
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -66,6 +70,7 @@ public class IssueConverter {
                 .updatedAt(issue.getUpdatedAt() != null ? issue.getUpdatedAt().toString() : null)
                 .labels(issue.getLabels())
                 .url(issue.getGithubUrl())
+                .repoName(issue.getRepo() != null ? issue.getRepo().getRepoName() : null)
                 .build();
     }
 
@@ -95,4 +100,63 @@ public class IssueConverter {
                 .isAssigned(isAlreadyAssigned)
                 .build();
     }
+
+//    public static Issue fromGitHubIssueNode(GitHubIssueResponse.IssueNode node) {
+//        return Issue.builder()
+//                .title(node.getTitle())
+//                .body(Optional.ofNullable(node.getBody()).orElse("내용 없음"))
+//                .summary(null)
+//                .githubUrl(node.getUrl())
+//                .author(node.getAuthor() != null ? node.getAuthor().getLogin() : "unknown")
+//                .authorAvatarUrl(node.getAuthor() != null ? node.getAuthor().getAvatarUrl() : null)
+//                .createdAt(OffsetDateTime.parse(node.getCreatedAt()).toLocalDateTime())
+//                .updatedAt(OffsetDateTime.parse(node.getUpdatedAt()).toLocalDateTime())
+//                .labels(node.getLabels() != null
+//                        ? node.getLabels().getNodes().stream().map(GitHubIssueResponse.LabelNode::getName).toList()
+//                        : Collections.emptyList())
+//                .state("OPEN")
+//                .language(node.getPrimaryLanguage() != null ? node.getPrimaryLanguage().getName() : null)
+//                .build();
+//    }
+
+    public static Issue fromGitHubIssueNode(GitHubIssueResponse.IssueNode node) {
+        GitHubIssueResponse.RepoInfo repoInfo = node.getRepoInfo();
+        if (repoInfo == null) return null;
+
+        String repoName = repoInfo != null ? repoInfo.getName() : null;
+        String ownerName = (repoInfo != null && repoInfo.getOwner() != null)
+                ? repoInfo.getOwner().getLogin() : null;
+
+        String githubUrl = (repoInfo != null && repoInfo.getNameWithOwner() != null)
+                ? "https://github.com/" + repoInfo.getNameWithOwner()
+                : null;
+
+        Repo repo = Repo.builder()
+                .repoName(repoName)
+                .githubUrl(githubUrl)
+                .ownerName(ownerName)
+                .ownerAvatarUrl((repoInfo != null && repoInfo.getOwner() != null)
+                        ? repoInfo.getOwner().getAvatarUrl()
+                        : null)
+                .build();
+
+        return Issue.builder()
+                .title(node.getTitle())
+                .body(Optional.ofNullable(node.getBody()).orElse("내용 없음"))
+                .summary(null)
+                .githubUrl(node.getUrl())
+                .author(node.getAuthor() != null ? node.getAuthor().getLogin() : "unknown")
+                .authorAvatarUrl(node.getAuthor() != null ? node.getAuthor().getAvatarUrl() : null)
+                .createdAt(OffsetDateTime.parse(node.getCreatedAt()).toLocalDateTime())
+                .updatedAt(OffsetDateTime.parse(node.getUpdatedAt()).toLocalDateTime())
+                .labels(node.getLabels() != null
+                        ? node.getLabels().getNodes().stream().map(GitHubIssueResponse.LabelNode::getName).toList()
+                        : Collections.emptyList())
+                .state(node.getState())
+                .language(node.getPrimaryLanguage() != null ? node.getPrimaryLanguage().getName() : null)
+                .repo(repo)
+                .build();
+    }
+
+
 }

@@ -151,6 +151,7 @@ public class GitHubGraphQLService {
                 mergedAt
                 state
                 repository {
+                  name
                   nameWithOwner
                 }
                 closingIssuesReferences(first: 5) {
@@ -240,6 +241,103 @@ public class GitHubGraphQLService {
             throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
         }
     }
+
+    // 키워드 이슈 검색
+//    public GitHubIssueResponse searchIssues(String query) {
+//        String finalQuery = String.format("""
+//        {
+//          search(query: "%s", type: ISSUE, first: 30) {
+//            edges {
+//              node {
+//                ... on Issue {
+//                  title
+//                  body
+//                  url
+//                  createdAt
+//                  updatedAt
+//                  author {
+//                    login
+//                    avatarUrl
+//                  }
+//                  labels(first: 20) {
+//                    nodes { name }
+//                  }
+//                }
+//              }
+//            }
+//          }
+//        }
+//    """, query.replace("\"", "\\\""));
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        headers.setBearerAuth(githubToken);
+//
+//        HttpEntity<GitHubGraphQLRequest> request =
+//                new HttpEntity<>(new GitHubGraphQLRequest(finalQuery), headers);
+//
+//        try {
+//            ResponseEntity<GitHubIssueResponse> response = restTemplate.exchange(
+//                    GITHUB_GRAPHQL_URL, HttpMethod.POST, request, GitHubIssueResponse.class
+//            );
+//
+//            return response.getBody();
+//        } catch (Exception e) {
+//            log.error("GitHub 이슈 검색 실패: {}", e.getMessage(), e);
+//            throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
+//        }
+//    }
+
+    public GitHubIssueResponse searchIssues(String query) {
+        String finalQuery = String.format("""
+        {
+          search(query: \"%s\", type: ISSUE, first: 20) {
+            edges {
+              node {
+                ... on Issue {
+                  number
+                  title
+                  body
+                  url
+                  state
+                  createdAt
+                  updatedAt
+                  author {
+                    login
+                    avatarUrl
+                  }
+                  labels(first: 10) {
+                    nodes { name }
+                  }
+                  repository {
+                    name
+                    nameWithOwner
+                  }
+                }
+              }
+            }
+          }
+        }
+        """, query.replace("\"", "\\\""));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(githubToken);
+
+        HttpEntity<GitHubGraphQLRequest> request =
+                new HttpEntity<>(new GitHubGraphQLRequest(finalQuery), headers);
+
+        try {
+            ResponseEntity<GitHubIssueResponse> response = restTemplate.exchange(
+                    GITHUB_GRAPHQL_URL, HttpMethod.POST, request, GitHubIssueResponse.class);
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("GitHub 이슈 검색 실패", e);
+            throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
+        }
+    }
+
+
 
 
 }
