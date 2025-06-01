@@ -16,6 +16,7 @@ import com.chungang.capstone.openstep.domain.Repo.repository.RepoRepository;
 import com.chungang.capstone.openstep.domain.Repo.service.RepoQueryService;
 import com.chungang.capstone.openstep.domain.common.InterestDomain;
 import com.chungang.capstone.openstep.domain.common.InterestLanguage;
+import com.chungang.capstone.openstep.domain.common.UpdatePeriod;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
 import com.chungang.capstone.openstep.global.apiPayload.exception.handler.IssueHandler;
 import lombok.RequiredArgsConstructor;
@@ -306,7 +307,44 @@ public class IssueQueryService {
                 .collect(Collectors.toList());
     }
 
+    public List<Issue> searchGitHubIssuesByKeywordAndFilters(String keyword, List<InterestLanguage> languages, UpdatePeriod updatePeriod) {
+        String languageQuery = (languages != null && !languages.isEmpty())
+                ? " language:" + languages.stream()
+                .map(InterestLanguage::getLabel)
+                .collect(Collectors.joining(" OR "))
+                : "";
 
+        String fullQuery = keyword + languageQuery;
+
+        GitHubIssueResponse response = gitHubGraphQLService.searchIssues(fullQuery);
+        if (response == null || response.getData() == null) return Collections.emptyList();
+
+        OffsetDateTime threshold = (updatePeriod != null)
+                ? updatePeriod.getThresholdTime()
+                : OffsetDateTime.MIN;
+
+        List<GitHubIssueResponse.Edge> edges = Optional.ofNullable(response.getData())
+                .map(GitHubIssueResponse.Data::getSearch)
+                .map(GitHubIssueResponse.Search::getEdges)
+                .orElse(Collections.emptyList());
+
+        return edges.stream()
+                .map(GitHubIssueResponse.Edge::getNode)
+                .filter(Objects::nonNull)
+                .filter(node -> node.getUpdatedAt() != null)
+                .map(node -> {
+                    try {
+                        OffsetDateTime updatedAt = OffsetDateTime.parse(node.getUpdatedAt());
+                        return updatedAt.isAfter(threshold) ? node : null;
+                    } catch (Exception e) {
+                        return null; // 날짜 파싱 실패 시 무시
+                    }
+                })
+                .filter(Objects::nonNull)
+                .limit(20)
+                .map(IssueConverter::fromGitHubIssueNode)
+                .toList();
+    }
 
 
 }

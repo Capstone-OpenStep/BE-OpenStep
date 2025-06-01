@@ -25,6 +25,8 @@ public class IssueResponseDTO {
         private String authorAvatarUrl;
         private boolean isBookmarked;
         private List<String> labels;
+        private String repoName;
+        private String repoUrl;
     }
 
 
@@ -46,6 +48,8 @@ public class IssueResponseDTO {
         private String authorAvatarUrl;
         private boolean isBookmarked;
         private List<String> labels;
+        private String repoName;
+        private String repoUrl;
     }
 
     @Builder

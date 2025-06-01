@@ -1,5 +1,7 @@
 package com.chungang.capstone.openstep.domain.Github.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,6 +32,7 @@ public class GitHubIssueResponse {
         private String name;
         private Issues issues;
         private Owner owner;
+        private String nameWithOwner;
     }
 
     @Getter
@@ -53,7 +56,11 @@ public class GitHubIssueResponse {
         private int stargazerCount;
         private String createdAt;
         private String updatedAt;
+
+        @JsonIgnore
         private Repository repository;
+        @JsonProperty("repository")
+        private RepoInfo repoInfo;
 
         public int getGoodFirstIssueCount() {
             return goodFirstIssue != null ? goodFirstIssue.getTotalCount() : 0;
@@ -88,4 +95,10 @@ public class GitHubIssueResponse {
         private String avatarUrl;
     }
 
+    @Getter
+    public static class RepoInfo {
+        private String name;
+        private String nameWithOwner;
+        private Owner owner;
+    }
 }
