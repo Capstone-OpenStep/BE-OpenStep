@@ -16,7 +16,11 @@ import com.chungang.capstone.openstep.global.security.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,6 +34,7 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping("/issues")
 @Tag(name = "이슈 API", description = "GitHub 이슈 관련 API입니다.")
 public class IssueController {
@@ -40,8 +45,8 @@ public class IssueController {
 	// 트렌딩 이슈 목록 조회 API
 	@GetMapping("/trending")
 	@Operation(summary = "트렌딩 issue 조회 API", description = "현재 인기 있는 트렌딩한 오픈소스 이슈를 조회합니다.")
-	public ApiResponse<IssueResponseDTO.IssueListDTO> getTrendingIssues() {
-		List<Issue> issues = issueQueryService.getTrendingIssues();
+	public ApiResponse<IssueResponseDTO.IssueListDTO> getTrendingIssues(@Parameter(description = "페이지 번호 (0~3)") @RequestParam(defaultValue = "0") @Min(0) @Max(3) int page) {
+		List<Issue> issues = issueQueryService.getTrendingIssues(PageRequest.of(page, 5));
 		Member member = SecurityUtils.getCurrentMemberOrNull();
 		List<Long> bookmarkedIds = (member != null) ? issueQueryService.getBookmarkedIssueIds(member.getMemberId()) : List.of(); // 비로그인시에는 빈 리스트 반환
 		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_TRENDING_OK, IssueConverter.toIssueListDTO(issues, bookmarkedIds));
@@ -68,9 +73,9 @@ public class IssueController {
 	// 사용자 맞춤 이슈 추천
 	@GetMapping("/suggest")
 	@Operation(summary = "사용자 맞춤 이슈 추천 API", description = "사용자의 관심사에 맞는 오픈소스 이슈를 추천합니다.")
-	public ApiResponse<IssueResponseDTO.IssueListDTO> suggestIssues() {
+	public ApiResponse<IssueResponseDTO.IssueListDTO> suggestIssues(@Parameter(description = "페이지 번호 (0~3)") @RequestParam(defaultValue = "0") @Min(0) @Max(3) int page) {
 		Member member = SecurityUtils.getCurrentMember();
-		List<Issue> issues = issueQueryService.getSuggestedIssues(member);
+		List<Issue> issues = issueQueryService.getSuggestedIssues(member, PageRequest.of(page, 5));
 		List<Long> bookmarkedIds = issueQueryService.getBookmarkedIssueIds(member.getMemberId());
 		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_SUGGEST_OK, IssueConverter.toIssueListDTO(issues, bookmarkedIds));
 	}
@@ -90,10 +95,11 @@ public class IssueController {
 	public ApiResponse<IssueResponseDTO.IssueListDTO> searchIssuesByKeyword(
 			@RequestParam String search,
 			@RequestParam(required = false) List<InterestLanguage> languages,
-			@RequestParam(required = false) UpdatePeriod updatePeriod
+			@RequestParam(required = false) UpdatePeriod updatePeriod,
+			@Parameter(description = "페이지 번호 (0~3)") @RequestParam(defaultValue = "0") @Min(0) @Max(3) int page
 	) {
 		Member member = SecurityUtils.getCurrentMember();
-		List<Issue> issues = issueQueryService.searchGitHubIssuesByKeywordAndFilters(search, languages, updatePeriod);
+		List<Issue> issues = issueQueryService.searchGitHubIssuesByKeywordAndFilters(search, languages, updatePeriod, PageRequest.of(page, 5));
 		List<Long> bookmarkedIds = issueQueryService.getBookmarkedIssueIds(member.getMemberId());
 		return ApiResponse.onSuccess(SuccessStatus.ISSUE_SEARCH_BY_KEYWORD_OK,
 				IssueConverter.toIssueListDTO(issues, bookmarkedIds));
