@@ -21,6 +21,7 @@ import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
 import com.chungang.capstone.openstep.global.apiPayload.exception.handler.IssueHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -43,9 +44,51 @@ public class IssueQueryService {
     private final MemberDomainRepository memberDomainRepository;
     private final BookmarkRepository bookmarkRepository;
 
-    public List<Issue> getTrendingIssues() {
-        List<Repo> repos = repoRepository.findAll();
+//    public List<Issue> getTrendingIssues(Pageable pageable) {
+//        List<Repo> repos = repoRepository.findAll();
+//        List<Issue> allIssues = new ArrayList<>();
+//        for (Repo repo : repoRepository.findTop10ByOrderByStarsDesc()) {
+//            GitHubIssueResponse res = gitHubGraphQLService.fetchIssuesByRepo(repo.getOwnerName(), repo.getRepoName());
+//            if (res != null && res.getData().getRepository() != null) {
+//                List<Issue> issues = res.getData().getRepository().getIssues().getNodes().stream()
+//                        .map(node -> {
+//                            Optional<Issue> existing = issueRepository.findByGithubUrl(node.getUrl());
+//                            if (existing.isPresent()) {
+//                                Issue issue = existing.get();
+//                                LocalDateTime updated = OffsetDateTime.parse(node.getUpdatedAt()).toLocalDateTime();
+//                                if (issue.getUpdatedAt().isEqual(updated)) return issue; // skip
+//                            }
+//                            return saveIfNotExistsOrUpdate(node, repo);
+//                        })
+//                        .filter(Objects::nonNull)
+//                        .toList();
+//                allIssues.addAll(issues);
+//            }
+//            if (allIssues.size() >= 20) break;
+//        }
+//        List<Issue> top20 = allIssues.stream()
+//                .sorted(Comparator.comparing(Issue::getUpdatedAt).reversed())
+//                .limit(20)
+//                .toList();
+//
+//        int start = (int) pageable.getOffset();
+//        int end = Math.min(start + pageable.getPageSize(), top20.size());
+//        if (start >= end) return List.of();
+//        return top20.subList(start, end);
+//    }
+
+    public List<Issue> getTrendingIssues(Pageable pageable) {
+        List<Issue> cached = issueCacheService.getTrendingIssuesFromCache();
+        if (cached != null && !cached.isEmpty()) {
+            log.info("[TRENDING] Cache hit: {} issues", cached.size());
+            int start = (int) pageable.getOffset();
+            int end = Math.min(start + pageable.getPageSize(), cached.size());
+            return (start >= end) ? List.of() : cached.subList(start, end);
+        }
+
+        log.info("[TRENDING] Cache miss: fetching from GitHub...");
         List<Issue> allIssues = new ArrayList<>();
+
         for (Repo repo : repoRepository.findTop10ByOrderByStarsDesc()) {
             GitHubIssueResponse res = gitHubGraphQLService.fetchIssuesByRepo(repo.getOwnerName(), repo.getRepoName());
             if (res != null && res.getData().getRepository() != null) {
@@ -55,7 +98,7 @@ public class IssueQueryService {
                             if (existing.isPresent()) {
                                 Issue issue = existing.get();
                                 LocalDateTime updated = OffsetDateTime.parse(node.getUpdatedAt()).toLocalDateTime();
-                                if (issue.getUpdatedAt().isEqual(updated)) return issue; // skip
+                                if (issue.getUpdatedAt().isEqual(updated)) return issue;
                             }
                             return saveIfNotExistsOrUpdate(node, repo);
                         })
@@ -64,10 +107,22 @@ public class IssueQueryService {
                 allIssues.addAll(issues);
             }
         }
-        return allIssues;
+
+        // 정렬 및 캐시 저장
+        List<Issue> sorted = allIssues.stream()
+                .sorted(Comparator.comparing(Issue::getUpdatedAt).reversed())
+                .toList();
+
+        issueCacheService.saveTrendingIssues(sorted);
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), sorted.size());
+        return (start >= end) ? List.of() : sorted.subList(start, end);
     }
 
-    public List<Issue> getSuggestedIssues(Member member) {
+
+
+    public List<Issue> getSuggestedIssues(Member member, Pageable pageable) {
         Long memberId = member.getMemberId();
         log.info("[ISSUE_RECOMMEND] Start for memberId = {}", memberId);
 
@@ -78,7 +133,10 @@ public class IssueQueryService {
         List<Issue> cached = issueCacheService.getRecommendedIssues(memberId);
         if (cached != null && currentHash.equals(cachedHash)) {
             log.info("[ISSUE_RECOMMEND] Cache hit: {} issues (interests same)", cached.size());
-            return cached;
+            int start = (int) pageable.getOffset();
+            int end = Math.min(start + pageable.getPageSize(), cached.size());
+            if (start >= end) return List.of();
+            return cached.subList(start, end);
         }
 
         // 관심사 바뀐 경우 캐시 무효화
@@ -205,7 +263,10 @@ public class IssueQueryService {
         if (summarized.size() < 20) {
             log.warn("[ISSUE_RECOMMEND] WARNING: Recommended issue count below target ({} / 20)", summarized.size());
         }
-        return summarized;
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), summarized.size());
+        if (start >= end) return List.of();
+        return summarized.subList(start, end);
     }
 
 
@@ -307,7 +368,12 @@ public class IssueQueryService {
                 .collect(Collectors.toList());
     }
 
-    public List<Issue> searchGitHubIssuesByKeywordAndFilters(String keyword, List<InterestLanguage> languages, UpdatePeriod updatePeriod) {
+    public List<Issue> searchGitHubIssuesByKeywordAndFilters(
+            String keyword,
+            List<InterestLanguage> languages,
+            UpdatePeriod updatePeriod,
+            Pageable pageable
+    ) {
         String languageQuery = (languages != null && !languages.isEmpty())
                 ? " language:" + languages.stream()
                 .map(InterestLanguage::getLabel)
@@ -328,7 +394,7 @@ public class IssueQueryService {
                 .map(GitHubIssueResponse.Search::getEdges)
                 .orElse(Collections.emptyList());
 
-        return edges.stream()
+        List<Issue> filtered = edges.stream()
                 .map(GitHubIssueResponse.Edge::getNode)
                 .filter(Objects::nonNull)
                 .filter(node -> node.getUpdatedAt() != null)
@@ -337,14 +403,21 @@ public class IssueQueryService {
                         OffsetDateTime updatedAt = OffsetDateTime.parse(node.getUpdatedAt());
                         return updatedAt.isAfter(threshold) ? node : null;
                     } catch (Exception e) {
-                        return null; // 날짜 파싱 실패 시 무시
+                        return null;
                     }
                 })
                 .filter(Objects::nonNull)
-                .limit(20)
                 .map(IssueConverter::fromGitHubIssueNode)
+                .limit(20)
                 .toList();
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filtered.size());
+        if (start >= end) return List.of();
+
+        return filtered.subList(start, end);
     }
+
 
 
 }

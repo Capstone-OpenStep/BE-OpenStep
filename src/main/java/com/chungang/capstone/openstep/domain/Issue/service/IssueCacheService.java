@@ -18,6 +18,7 @@ public class IssueCacheService {
     private final ObjectMapper objectMapper;
 
     private final long CACHE_EXPIRE_SECONDS = 60L * 60 * 24 * 60; // TTL 60일
+    private static final String TRENDING_CACHE_KEY = "trending:issues";
 
     // 사용자별 추천 캐시 (기존 유지)
     public void saveRecommendedIssues(Long memberId, List<Issue> issues) {
@@ -62,6 +63,31 @@ public class IssueCacheService {
     public void evictInterestHash(Long memberId) {
         redisTemplate.delete(generateInterestHashKey(memberId));
     }
+
+
+    public void saveTrendingIssues(List<Issue> issues) {
+        try {
+            String json = objectMapper.writeValueAsString(issues);
+            redisTemplate.opsForValue().set(TRENDING_CACHE_KEY, json, 6, TimeUnit.HOURS);
+        } catch (Exception e) {
+            throw new RuntimeException("트렌딩 이슈 캐싱 실패", e);
+        }
+    }
+
+    public List<Issue> getTrendingIssuesFromCache() {
+        String cached = redisTemplate.opsForValue().get(TRENDING_CACHE_KEY);
+        if (cached == null) return null;
+        try {
+            return objectMapper.readValue(cached, new TypeReference<List<Issue>>() {});
+        } catch (Exception e) {
+            throw new RuntimeException("트렌딩 이슈 캐시 역직렬화 실패", e);
+        }
+    }
+
+    public void evictTrendingIssues() {
+        redisTemplate.delete(TRENDING_CACHE_KEY);
+    }
+
 
 
 
