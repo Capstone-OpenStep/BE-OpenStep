@@ -25,18 +25,24 @@ public class RedisConfig {
     @Value("${spring.data.redis.password}")
     private String password;
 
+    @Value("${spring.data.redis.ssl.enabled:false}")
+    private boolean sslEnabled;
+
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
 
-        if (password != null && !password.isBlank()) {
+        if (!password.isBlank()) {
             config.setPassword(RedisPassword.of(password));
         }
 
-        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-                .build();  // SSL도 필요 없다면 .useSsl() 제거 가능
+        LettuceClientConfiguration.LettuceClientConfigurationBuilder builder = LettuceClientConfiguration.builder();
 
-        return new LettuceConnectionFactory(config, clientConfig);
+        if (sslEnabled) {
+            builder.useSsl();
+        }
+
+        return new LettuceConnectionFactory(config, builder.build());
     }
 
 
