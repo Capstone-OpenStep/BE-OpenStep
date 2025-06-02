@@ -22,6 +22,9 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int port;
 
+    @Value("${spring.data.redis.username:}")
+    private String username;
+
     @Value("${spring.data.redis.password}")
     private String password;
 
@@ -32,7 +35,11 @@ public class RedisConfig {
     public LettuceConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
 
-        if (!password.isBlank()) {
+        if (username != null && !username.isBlank()) {
+            config.setUsername(username);
+        }
+
+        if (password != null && !password.isBlank()) {
             config.setPassword(RedisPassword.of(password));
         }
 
@@ -42,7 +49,8 @@ public class RedisConfig {
             builder.useSsl();
         }
 
-        return new LettuceConnectionFactory(config, builder.build());
+        LettuceClientConfiguration clientConfig = builder.build();
+        return new LettuceConnectionFactory(config, clientConfig);
     }
 
 
