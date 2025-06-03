@@ -3,6 +3,9 @@ package com.chungang.capstone.openstep.domain.Task.entity;
 import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
 import com.chungang.capstone.openstep.domain.Member.entity.Member;
 import com.chungang.capstone.openstep.domain.common.BaseEntity;
+import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
+import com.chungang.capstone.openstep.global.apiPayload.exception.TaskException;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,5 +41,12 @@ public class Task extends BaseEntity {
 
     public void updateStatus(TaskStatus resolvedStatus) {
         this.status = resolvedStatus;
+    }
+
+    public void updatePrUrl(String prUrl) {
+        if (this.status != TaskStatus.FORKED) {
+            throw new TaskException(ErrorStatus.TASK_PR_URL_UPDATE_ERROR);
+        }
+        this.prUrl = prUrl;
     }
 }

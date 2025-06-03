@@ -160,4 +160,20 @@ public class TaskQueryService {
 
 		return categorizedStatistics;
 	}
+
+	public TaskResponseDTO.TaskDetail updatePRUrl(Long taskId,String prUrl ,Member member) {
+	Task task = taskRepository.findById(taskId).orElseThrow(() ->
+			new TaskException(ErrorStatus.TASK_NOT_FOUND));
+		TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
+
+		// DB 캐시 상태가 다르면 update
+		if (task.getStatus() != resolvedStatus) {
+			task.updateStatus(resolvedStatus);
+			task=taskRepository.save(task);
+		}
+
+		task.updatePrUrl(prUrl);
+		taskRepository.save(task);
+		return TaskConverter.toTaskDetail(task);
+	}
 }

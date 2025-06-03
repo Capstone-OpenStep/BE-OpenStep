@@ -52,6 +52,7 @@ public enum SuccessStatus implements BaseCode {
     TASK_STATUS_GET_OK(HttpStatus.OK,"TASK_4004" ,"테스크 상태 조회가 완료되었습니다." ),
     TASK_STATUS_UPDATE_OK(HttpStatus.OK,"TASK_4005","사용자의 전체 테스크 상태 업데이트가 완료되었습니다." ),
     TASK_STATISTICS_GET_OK(HttpStatus.OK,"TASK_4006","테스크 통계 조회가 완료되었습니다." ),
+    TASK_PR_URL_UPDATE_OK(HttpStatus.OK,"TASK_4007","테스크 PR URL 업데이트가 완료되었습니다." ),
     TASK_DELETE_OK(HttpStatus.OK,"TASK_4101","테스크 삭제가 완료되었습니다." ),
 
     // Rank 관련 응답
