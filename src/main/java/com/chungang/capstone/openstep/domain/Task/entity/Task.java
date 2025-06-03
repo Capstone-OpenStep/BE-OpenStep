@@ -44,6 +44,12 @@ public class Task extends BaseEntity {
     }
 
     public void updatePrUrl(String prUrl) {
+        //url 형식이 올바른지 확인
+        //https://github.com/<owner>/<repo>/pull/<pr-number>
+        if (prUrl == null || !prUrl.matches("https://github\\.com/[^/]+/[^/]+/pull/\\d+")) {
+            throw new TaskException(ErrorStatus.TASK_PR_URL_INVALID);
+        }
+
         if (this.status != TaskStatus.FORKED) {
             throw new TaskException(ErrorStatus.TASK_PR_URL_UPDATE_ERROR);
         }
