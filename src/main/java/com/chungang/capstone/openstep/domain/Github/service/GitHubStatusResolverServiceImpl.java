@@ -38,6 +38,10 @@ public class GitHubStatusResolverServiceImpl implements GitHubStatusResolverServ
         PullRequestResponse.PullRequestRes pr = gitHubRestService.findPullRequest(owner, repo, task.getBranchName(), user,githubToken);
         if (pr == null) {
             //pr null인 경우는 PR이 생성되지 않은 상태
+            if(task.getStatus()==TaskStatus.PROGRESS)
+            {
+                return TaskStatus.PROGRESS; // 작업 중인 상태
+            }
             return TaskStatus.FORKED;
         }
 

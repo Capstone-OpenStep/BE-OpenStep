@@ -56,6 +56,9 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 테스크 관련 에러 4000
     TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "TASK_4001", "존재하지 않는 테스크입니다."),
+    TASK_PR_URL_UPDATE_ERROR_INVALID_URL(HttpStatus.BAD_REQUEST, "TASK_4002", "PR URL 형식이 올바르지 않습니다.https://github.com/<owner>/<repo>/pull/<pr-number>"),
+    TASK_PR_URL_UPDATE_ERROR_EXCEPT_FORKED(HttpStatus.BAD_REQUEST, "TASK_4002", "PR URL 업데이트는 FORKED 상태에서는 불가능합니다"),
+    TASK_PR_URL_INVALID(HttpStatus.BAD_REQUEST, "TASK_4003", "PR URL 형식이 올바르지 않습니다."),
 
     // Rank 관련 에러 5000
     RANK_NOT_FOUND(HttpStatus.NOT_FOUND,"RANK_4001", "해당 사용자의 랭킹 정보를 찾을 수 없습니다.");

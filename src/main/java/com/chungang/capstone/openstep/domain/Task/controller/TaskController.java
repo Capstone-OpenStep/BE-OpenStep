@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.chungang.capstone.openstep.domain.Member.entity.Member;
@@ -54,6 +56,18 @@ public class TaskController {
 	) {
 		Member member= SecurityUtils.getCurrentMember();
 		return ApiResponse.onSuccess(SuccessStatus.TASK_BRANCH_GET_OK, taskQueryService.getStatusByTaskId(taskId,member));
+	}
+
+
+
+	@Operation(summary = "특정 테스크의 PR URL 업데이트 API", description = "특정 오픈소스 레포지토리의 기여(테스크) PR URL을 업데이트합니다. forked 상태 이외의 상태에서만 가능합니다.")
+	@PatchMapping("/{task-id}/pr")
+	public ApiResponse<TaskResponseDTO.TaskDetail> updatePRUrl (
+		@PathVariable("task-id") Long taskId,
+		@RequestParam(name = "url") String prUrl ){
+		Member member = SecurityUtils.getCurrentMember();
+		TaskResponseDTO.TaskDetail taskDetail = taskQueryService.updatePRUrl(taskId, prUrl, member);
+		return ApiResponse.onSuccess(SuccessStatus.TASK_PR_URL_UPDATE_OK, taskDetail);
 	}
 
 	@GetMapping("/recent")
