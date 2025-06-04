@@ -1,16 +1,21 @@
 package com.chungang.capstone.openstep.domain.Issue.controller;
 
+import com.chungang.capstone.openstep.domain.Github.dto.GitHubIssueResponse;
+import com.chungang.capstone.openstep.domain.Github.service.GitHubGraphQLService;
 import com.chungang.capstone.openstep.domain.Issue.service.IssueCommandService;
 import com.chungang.capstone.openstep.domain.Issue.service.IssueQueryService;
 import com.chungang.capstone.openstep.domain.Member.entity.Member;
+import com.chungang.capstone.openstep.domain.OpenAI.service.OpenAIService;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
 import com.chungang.capstone.openstep.domain.common.InterestLanguage;
 import com.chungang.capstone.openstep.domain.common.UpdatePeriod;
+import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.SuccessStatus;
 import com.chungang.capstone.openstep.global.apiPayload.ApiResponse;
 import com.chungang.capstone.openstep.domain.Issue.converter.IssueConverter;
 import com.chungang.capstone.openstep.domain.Issue.dto.IssueResponseDTO;
 import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
+import com.chungang.capstone.openstep.global.apiPayload.exception.handler.IssueHandler;
 import com.chungang.capstone.openstep.global.security.util.SecurityUtils;
 
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,12 +41,15 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 @RequestMapping("/issues")
 @Tag(name = "이슈 API", description = "GitHub 이슈 관련 API입니다.")
 public class IssueController {
 
 	private final IssueQueryService issueQueryService;
 	private final IssueCommandService issueCommandService;
+	private final GitHubGraphQLService gitHubGraphQLService;
+	private final OpenAIService openAIService;
 
 	// 트렌딩 이슈 목록 조회 API
 	@GetMapping("/trending")
@@ -104,6 +113,23 @@ public class IssueController {
 		return ApiResponse.onSuccess(SuccessStatus.ISSUE_SEARCH_BY_KEYWORD_OK,
 				IssueConverter.toIssueListDTO(issues, bookmarkedIds));
 	}
+
+	@GetMapping("/detail-by-url")
+	@Operation(summary = "GitHub URL 기반 이슈 상세 조회", description = "검색된 이슈의 GitHub URL로 상세 정보를 조회합니다.")
+	public ApiResponse<IssueResponseDTO.IssueDetailDTO> getIssueDetailByUrl(@RequestParam String url) {
+		GitHubIssueResponse.IssueNode node = gitHubGraphQLService.fetchIssueByUrl(url);
+		if (node == null) throw new IssueHandler(ErrorStatus.ISSUE_NOT_FOUND);
+		Issue issue = IssueConverter.fromGitHubIssueNode(node);
+		try {
+			String raw = openAIService.summarizeIssue(issue.getTitle(), issue.getBody());
+			issue.setSummary(openAIService.rewriteNaturalKorean(raw));
+		} catch (Exception e) {
+			log.warn("[SUMMARY] 요약 실패: {}", url, e);
+			issue.setSummary("요약을 생성할 수 없습니다.");
+		}
+		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_DETAIL_OK, IssueConverter.toIssueDetailDTO(issue));
+	}
+
 
 
 
