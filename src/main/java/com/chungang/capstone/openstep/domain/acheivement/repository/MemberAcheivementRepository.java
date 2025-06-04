@@ -11,18 +11,16 @@ import com.chungang.capstone.openstep.domain.acheivement.enums.AcheivementType;
 
 public interface MemberAcheivementRepository extends JpaRepository<MemberAchievement,Long> {
 
-	@Query("SELECT ma FROM MemberAchievement ma WHERE ma.member.memberId = :memberId AND ma.type = :type")
-	Optional<MemberAchievement> findByMemberAndType(
+
+	Optional<MemberAchievement> findByMemberIdAndType(
 		Long memberId,
 		AcheivementType type
 	);
 
-	@Query("SELECT ma FROM MemberAchievement ma WHERE ma.member.memberId = :memberId")
 	List<MemberAchievement> findByMemberId(Long memberId);
 
-	@Query("SELECT ma FROM MemberAchievement ma WHERE ma.member.memberId = :memberId AND ma.unlocked = true")
 	List<MemberAchievement> findUnlockedAchievementsByMemberId(Long memberId);
 
 	@Query("SELECT ma FROM MemberAchievement ma WHERE ma.member.memberId IN :memberIds")
-	List<MemberAchievement> findByUserIds(List<Long> memberIds);
+	List<MemberAchievement> findByMemberIds(List<Long> memberIds);
 }
