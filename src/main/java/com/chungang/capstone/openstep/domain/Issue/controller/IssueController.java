@@ -107,7 +107,7 @@ public class IssueController {
 			@RequestParam(required = false) UpdatePeriod updatePeriod,
 			@Parameter(description = "페이지 번호 (0~3)") @RequestParam(defaultValue = "0") @Min(0) @Max(3) int page
 	) {
-		Member member = SecurityUtils.getCurrentMember();
+		Member member = SecurityUtils.getCurrentMemberOrNull();
 		List<Issue> issues = issueQueryService.searchGitHubIssuesByKeywordAndFilters(search, languages, updatePeriod, PageRequest.of(page, 5));
 		List<Long> bookmarkedIds = issueQueryService.getBookmarkedIssueIds(member.getMemberId());
 		return ApiResponse.onSuccess(SuccessStatus.ISSUE_SEARCH_BY_KEYWORD_OK,
