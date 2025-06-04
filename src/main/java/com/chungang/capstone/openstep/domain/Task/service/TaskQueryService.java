@@ -164,6 +164,7 @@ public class TaskQueryService {
 		return updatedTasks;
 	}
 
+
 	private void handleXpGranting(Member member, Task task, TaskStatus newStatus) {
 		// 중복 지급 방지
 		if (taskXpLogRepository.existsByTaskAndStatus(task, newStatus)) return;
@@ -197,6 +198,42 @@ public class TaskQueryService {
 
 
 
+	public Map<String, Long> getTaskStatistics(Member member) {
+		List<Task> tasks = taskRepository.findAllByMember(member);
 
+		// 라벨 별로 기여 수를 세기
+		Map<String, Long> statistics = tasks.stream()
+			.flatMap(task -> task.getIssue().getLabels().stream())
+			.collect(Collectors.groupingBy(label -> label, Collectors.counting()));
 
+		// 라벨을 feature, bug, refactor, good first issue, chore로 구분하고 나머지는 other로 분류
+		Map<String, Long> categorizedStatistics = new LinkedHashMap<>();
+		categorizedStatistics.put("feature", statistics.getOrDefault("feature", 0L));
+		categorizedStatistics.put("bug", statistics.getOrDefault("bug", 0L));
+		categorizedStatistics.put("refactor", statistics.getOrDefault("refactor", 0L));
+		categorizedStatistics.put("good first issue", statistics.getOrDefault("good first issue", 0L));
+		categorizedStatistics.put("chore", statistics.getOrDefault("chore", 0L));
+		categorizedStatistics.put("other", statistics.entrySet().stream()
+			.filter(entry -> !categorizedStatistics.containsKey(entry.getKey()))
+			.map(Map.Entry::getValue)
+			.reduce(0L, Long::sum));
+
+		return categorizedStatistics;
+	}
+
+	public TaskResponseDTO.TaskDetail updatePRUrl(Long taskId,String prUrl ,Member member) {
+	Task task = taskRepository.findById(taskId).orElseThrow(() ->
+			new TaskException(ErrorStatus.TASK_NOT_FOUND));
+		TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
+
+		// DB 캐시 상태가 다르면 update
+		if (task.getStatus() != resolvedStatus) {
+			task.updateStatus(resolvedStatus);
+			task=taskRepository.save(task);
+		}
+
+		task.updatePrUrl(prUrl);
+		taskRepository.save(task);
+		return TaskConverter.toTaskDetail(task);
+	}
 }
