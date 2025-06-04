@@ -109,7 +109,7 @@ public class IssueController {
 	) {
 		Member member = SecurityUtils.getCurrentMemberOrNull();
 		List<Issue> issues = issueQueryService.searchGitHubIssuesByKeywordAndFilters(search, languages, updatePeriod, PageRequest.of(page, 5));
-		List<Long> bookmarkedIds = issueQueryService.getBookmarkedIssueIds(member.getMemberId());
+		List<Long> bookmarkedIds = (member != null) ? issueQueryService.getBookmarkedIssueIds(member.getMemberId()) : List.of();
 		return ApiResponse.onSuccess(SuccessStatus.ISSUE_SEARCH_BY_KEYWORD_OK,
 				IssueConverter.toIssueListDTO(issues, bookmarkedIds));
 	}
