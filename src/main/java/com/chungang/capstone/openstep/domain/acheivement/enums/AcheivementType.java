@@ -1,8 +1,10 @@
 package com.chungang.capstone.openstep.domain.acheivement.enums;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
+@Getter
 public enum AcheivementType {
 
 	//즉시 달성형
