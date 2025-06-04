@@ -1,6 +1,7 @@
 package com.chungang.capstone.openstep.domain.Issue.converter;
 
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubIssueResponse;
+import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse;
 import com.chungang.capstone.openstep.domain.Issue.dto.IssueResponseDTO;
 import com.chungang.capstone.openstep.domain.Issue.entity.Issue;
 import com.chungang.capstone.openstep.domain.Repo.entity.Repo;
@@ -158,5 +159,77 @@ public class IssueConverter {
                 .build();
     }
 
+
+//    public static IssueResponseDTO.IssueDetailWithRepoDTO toIssueDetailWithRepoDTO(Issue issue, Repo repo) {
+//        IssueResponseDTO.IssueDetailDTO issueDetailDTO = toIssueDetailDTO(issue);
+//
+//        IssueResponseDTO.RepoSummaryDTO repoSummaryDTO = IssueResponseDTO.RepoSummaryDTO.builder()
+//                .repoId(repo.getRepoId())
+//                .repoName(repo.getRepoName())
+//                .summary(repo.getSummary())
+//                .ownerName(repo.getOwnerName())
+//                .ownerAvatarUrl(repo.getOwnerAvatarUrl())
+//                .description(repo.getDescription())
+//                .language(repo.getLanguage())
+//                .stars(repo.getStars())
+//                .watchers(repo.getWatchers())
+//                .forks(repo.getForks())
+//                .openIssues(repo.getOpenIssues())
+//                .closedIssues(repo.getClosedIssues())
+//                .beginnerIssueCount(repo.getBeginnerIssueCount())
+//                .githubUrl(repo.getGithubUrl())
+//                .readmeUrl(repo.getReadmeUrl())
+//                .build();
+//
+//        return IssueResponseDTO.IssueDetailWithRepoDTO.builder()
+//                .issue(issueDetailDTO)
+//                .repo(repoSummaryDTO)
+//                .build();
+//    }
+
+    public static IssueResponseDTO.IssueDetailWithRepoDTO fromGitHubIssueNodeWithRepo(GitHubIssueResponse.IssueNode issueNode, GitHubRepoResponse.Node repoNode) {
+        IssueResponseDTO.IssueDetailDTO issueDetailDTO = IssueResponseDTO.IssueDetailDTO.builder()
+                .issueId(null)
+                .repoId(null)
+                .title(issueNode.getTitle())
+                .body(issueNode.getBody())
+                .summary(null)
+                .language(issueNode.getRepoInfo() != null && issueNode.getRepoInfo().getOwner() != null ? issueNode.getRepoInfo().getOwner().getLogin() : null)
+                .url(issueNode.getUrl())
+                .createdAt(issueNode.getCreatedAt())
+                .updatedAt(issueNode.getUpdatedAt())
+                .author(issueNode.getAuthor() != null ? issueNode.getAuthor().getLogin() : null)
+                .authorAvatarUrl(issueNode.getAuthor() != null ? issueNode.getAuthor().getAvatarUrl() : null)
+                .isBookmarked(false)
+                .labels(issueNode.getLabels() != null
+                        ? issueNode.getLabels().getNodes().stream().map(GitHubIssueResponse.LabelNode::getName).toList()
+                        : List.of())
+                .repoName(issueNode.getRepoInfo() != null ? issueNode.getRepoInfo().getName() : null)
+                .repoUrl(repoNode.getUrl())
+                .build();
+
+        IssueResponseDTO.RepoSummaryDTO repoSummaryDTO = IssueResponseDTO.RepoSummaryDTO.builder()
+                .repoId(null)
+                .repoName(repoNode.getName())
+                .summary(null)
+                .ownerName(repoNode.getOwner() != null ? repoNode.getOwner().getLogin() : null)
+                .ownerAvatarUrl(repoNode.getOwner() != null ? repoNode.getOwner().getAvatarUrl() : null)
+                .description(repoNode.getDescription())
+                .language(repoNode.getPrimaryLanguage() != null ? repoNode.getPrimaryLanguage().getName() : null)
+                .stars(repoNode.getStargazerCount())
+                .watchers(repoNode.getWatchersCount())
+                .forks(repoNode.getForkCount() != null ? repoNode.getForkCount() : 0)
+                .openIssues(repoNode.getOpenIssuesCount())
+                .closedIssues(repoNode.getClosedIssuesCount())
+                .beginnerIssueCount(repoNode.getBeginnerIssueCount())
+                .githubUrl(repoNode.getUrl())
+                .readmeUrl(null)
+                .build();
+
+        return IssueResponseDTO.IssueDetailWithRepoDTO.builder()
+                .issue(issueDetailDTO)
+                .repo(repoSummaryDTO)
+                .build();
+    }
 
 }
