@@ -41,6 +41,18 @@ public class Member extends BaseEntity {
 
     private int xp;
 
+//    @Column(nullable = true)
+//    private String location;
+//
+//    @Column(nullable = true)
+//    private String githubProfileUrl;
+//
+//    @Column(nullable = true)
+//    private Integer followersCount;
+//
+//    @Column(nullable = true)
+//    private Integer followingCount;
+
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberLanguage> languages = new ArrayList<>();
 

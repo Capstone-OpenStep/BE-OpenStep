@@ -41,4 +41,17 @@ public class MemberConverter {
 		return member;
 	}
 
+//	public static MemberResponseDTO.GitHubProfileDTO toGitHubProfileDTO(Member member) {
+//		return MemberResponseDTO.GitHubProfileDTO.builder()
+//				.githubId(member.getGithubId())
+//				.email(member.getEmail())
+//				.avatarUrl(member.getProfileImageUrl())
+//				.location(member.getLocation())
+//				.profileUrl(member.getGithubProfileUrl())
+//				.followersCount(member.getFollowersCount() != null ? member.getFollowersCount() : 0)
+//				.followingCount(member.getFollowingCount() != null ? member.getFollowingCount() : 0)
+//				.build();
+//	}
+
+
 }

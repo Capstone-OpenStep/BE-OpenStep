@@ -27,6 +27,7 @@ public enum SuccessStatus implements BaseCode {
     MEMBER_LOGIN_OK(HttpStatus.OK, "MEMBER_1006", "유저 로그인에 성공하였습니다."),
     MEMBER_LOGOUT_OK(HttpStatus.OK, "MEMBER_1007", "유저 로그아웃에 성공하였습니다."),
     MEMBER_UPDATE_ACCESS_TOKEN_OK(HttpStatus.OK, "MEMBER_1008", "유저 액세스 토큰 재발급에 성공하였습니다."),
+    MEMBER_GET_GITHUB_PROFILE_OK(HttpStatus.OK, "MEMBER_1009", "유저 깃허브 프로필 조회에 성공하였습니다."),
 
     // 레포지토리 관련 응답
     REPO_GET_TRENDING_OK(HttpStatus.OK, "REPO_2001", "트렌딩 레포지토리 리스트를 성공적으로 조회하였습니다."),
