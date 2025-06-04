@@ -47,4 +47,17 @@ public class MemberResponseDTO {
 			String githubId,
 			Long memberId) {}
 
+
+	@Builder
+	public record GitHubProfileDTO(
+			String githubId,
+			String email,
+			String avatarUrl,
+			String location,
+			String profileUrl,
+			int followersCount,
+			int followingCount
+	) {}
+
+
 }

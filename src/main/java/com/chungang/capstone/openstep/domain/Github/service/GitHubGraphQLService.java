@@ -2,12 +2,9 @@ package com.chungang.capstone.openstep.domain.Github.service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
-import com.chungang.capstone.openstep.domain.Github.dto.GitHubGraphQLRequest;
-import com.chungang.capstone.openstep.domain.Github.dto.GitHubIssueResponse;
-import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse;
-import com.chungang.capstone.openstep.domain.Github.dto.PullRequestResponse;
-import com.chungang.capstone.openstep.domain.Github.dto.PullRequestResponseWrapper;
+import com.chungang.capstone.openstep.domain.Github.dto.*;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
 import com.chungang.capstone.openstep.global.apiPayload.exception.GithubGraphQLException;
 
@@ -398,6 +395,45 @@ public class GitHubGraphQLService {
             throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
         }
     }
+
+
+    public GitHubUserProfile fetchAuthenticatedUserProfile(String accessToken) {
+        String query = """
+        {
+          viewer {
+            login
+            avatarUrl
+            email
+            location
+            followers { totalCount }
+            following { totalCount }
+            url
+          }
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<GitHubGraphQLRequest> request = new HttpEntity<>(new GitHubGraphQLRequest(query), headers);
+
+        try {
+            ResponseEntity<GitHubUserProfileResponse> response = restTemplate.exchange(
+                    GITHUB_GRAPHQL_URL, HttpMethod.POST, request, GitHubUserProfileResponse.class
+            );
+
+            return Optional.ofNullable(response.getBody())
+                    .map(GitHubUserProfileResponse::getData)
+                    .map(GitHubUserProfileResponse.ViewerData::getViewer)
+                    .orElseThrow(() -> new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR));
+
+        } catch (Exception e) {
+            log.error("GitHub 프로필 정보 조회 실패", e);
+            throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
+        }
+    }
+
 
 
 

@@ -2,6 +2,9 @@ package com.chungang.capstone.openstep.domain.Member.controller;
 
 import java.util.List;
 
+import com.chungang.capstone.openstep.domain.Github.dto.GitHubUserProfile;
+import com.chungang.capstone.openstep.domain.Member.converter.MemberConverter;
+import com.chungang.capstone.openstep.domain.Member.entity.Member;
 import com.chungang.capstone.openstep.domain.Member.service.AuthService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -124,4 +127,29 @@ public class MemberController {
 		List<PullRequestResponse.PullRequestRes> contributions = gitHubGraphQLService.fetchMyPullRequestsWithIssues(githubId);
 		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_DETAIL_OK, contributions);
 	}
+
+	@GetMapping("/github/profile/realtime")
+	@Operation(summary = "GitHub 프로필 실시간 조회", description = "GitHub GraphQL API를 통해 실시간으로 프로필 정보를 조회합니다.")
+	public ApiResponse<MemberResponseDTO.GitHubProfileDTO> getGitHubProfileRealtime() {
+		Long memberId = SecurityUtils.getCurrentMemberId();
+		Member member = memberQueryService.getMemberById(memberId);
+		String accessToken = member.getGithubAccessToken();
+
+		GitHubUserProfile profile = gitHubGraphQLService.fetchAuthenticatedUserProfile(accessToken);
+
+		MemberResponseDTO.GitHubProfileDTO dto = MemberResponseDTO.GitHubProfileDTO.builder()
+				.githubId(profile.getLogin())
+				.email(profile.getEmail())
+				.avatarUrl(profile.getAvatarUrl())
+				.location(profile.getLocation())
+				.profileUrl(profile.getUrl())
+				.followersCount(profile.getFollowersCount())
+				.followingCount(profile.getFollowingCount())
+				.build();
+
+		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_GITHUB_PROFILE_OK, dto);
+	}
+
+
+
 }
