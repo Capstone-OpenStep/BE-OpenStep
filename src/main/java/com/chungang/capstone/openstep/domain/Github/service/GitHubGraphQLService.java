@@ -338,6 +338,67 @@ public class GitHubGraphQLService {
     }
 
 
+    public GitHubIssueResponse.IssueNode fetchIssueByUrl(String url) {
+        // 예: https://github.com/owner/repo/issues/123
+        try {
+            String[] parts = url.split("/");
+            String owner = parts[3];
+            String repo = parts[4];
+            int number = Integer.parseInt(parts[6]);
+
+            String query = String.format("""
+        {
+          repository(owner: "%s", name: "%s") {
+            issue(number: %d) {
+              number
+              title
+              body
+              url
+              state
+              createdAt
+              updatedAt
+              author {
+                login
+                avatarUrl
+              }
+              labels(first: 10) {
+                nodes {
+                  name
+                }
+              }
+              repository {
+                name
+                nameWithOwner
+                owner {
+                  login
+                  avatarUrl
+                }
+              }
+            }
+          }
+        }
+        """, owner, repo, number);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(githubToken);
+
+            HttpEntity<GitHubGraphQLRequest> request = new HttpEntity<>(new GitHubGraphQLRequest(query), headers);
+
+            ResponseEntity<GitHubIssueResponse> response = restTemplate.exchange(
+                    GITHUB_GRAPHQL_URL, HttpMethod.POST, request, GitHubIssueResponse.class
+            );
+
+            GitHubIssueResponse.Repository repoRes = response.getBody().getData().getRepository();
+            if (repoRes != null) return repoRes.getIssue();
+            else return null;
+
+        } catch (Exception e) {
+            log.error("[GraphQL] 이슈 단건 조회 실패", e);
+            throw new GithubGraphQLException(ErrorStatus.GITHUB_GRAPHQL_ERROR);
+        }
+    }
+
 
 
 }

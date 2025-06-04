@@ -53,7 +53,7 @@ public class SecurityConfig {
 
                                 // Issue 관련 접근
                                 .requestMatchers("/issues/trending", "/issues/{issue-id}", "/summary/issue/{issue-id}").permitAll()
-                                .requestMatchers("/issues/suggest", "/issues/search/keyword").permitAll()
+                                .requestMatchers("/issues/suggest", "/issues/search/keyword", "/issues/detail-by-url").permitAll()
 
                                 // Bookmark 관련 접근
                                 .requestMatchers("/bookmark/add/{issue-id}", "/bookmark/delete/{issue-id}", "/bookmark/list/").permitAll()

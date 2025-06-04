@@ -31,6 +31,7 @@ public class GitHubIssueResponse {
     public static class Repository {
         private String name;
         private Issues issues;
+        private IssueNode issue;
         private Owner owner;
         private String nameWithOwner;
     }
