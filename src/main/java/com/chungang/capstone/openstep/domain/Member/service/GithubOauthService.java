@@ -2,6 +2,8 @@ package com.chungang.capstone.openstep.domain.Member.service;
 
 import java.util.Objects;
 
+import com.chungang.capstone.openstep.domain.Rank.entity.Rank;
+import com.chungang.capstone.openstep.domain.Rank.repository.RankRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +36,7 @@ public class GithubOauthService {
 	private final RestTemplate restTemplate=new RestTemplate();
 
 	private final MemberRepository memberRepository;
+	private final RankRepository rankRepository;
 
 	public String getAccessTokenByCode(String code) {
 		//code를 이용해 access token을 요청하는 API 호출
@@ -84,6 +87,15 @@ public class GithubOauthService {
 					.profileImageUrl(githubUser.avatar_url())
 				.build();
 			memberRepository.save(member);
+
+			// member_rank 테이블에 멤버 추가
+			Rank rank = Rank.builder()
+					.member(member)
+					.xp(0)
+					.level(1)
+					.build();
+			rankRepository.save(rank);
+
 			isNewUser = true;
 		}
 		else {

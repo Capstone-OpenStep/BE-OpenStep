@@ -1,5 +1,8 @@
 package com.chungang.capstone.openstep.domain.Issue.service;
 
+import com.chungang.capstone.openstep.domain.Rank.entity.TaskXpLog;
+import com.chungang.capstone.openstep.domain.Rank.repository.TaskXpLogRepository;
+import com.chungang.capstone.openstep.domain.Rank.service.RankCommandService;
 import org.springframework.stereotype.Service;
 
 import com.chungang.capstone.openstep.domain.Github.service.GithubRepoService;
@@ -17,6 +20,8 @@ import com.chungang.capstone.openstep.domain.Task.repository.TaskRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -26,7 +31,8 @@ public class IssueCommandService {
 	private final MemberRepository memberRepository;
 	private final IssueQueryService issueQueryService;
 	private final GithubRepoService githubRepoService;
-
+	private final RankCommandService rankCommandService;
+	private final TaskXpLogRepository taskXpLogRepository;
 
 	//특정 이슈를 특정 멤버에게 할당하는 메서드
 	public IssueResponseDTO.IssueAssignmentDTO makeTask(Member member,Long issueId) {
@@ -55,6 +61,20 @@ public class IssueCommandService {
 			.branchName(branchName)
 			.build();
 		Task savedTask=taskRepository.save(task);
+
+		if (!taskXpLogRepository.existsByTaskAndStatus(savedTask, TaskStatus.FORKED)) {
+			rankCommandService.addXp(member, TaskStatus.FORKED.getXp());
+
+			TaskXpLog log = TaskXpLog.builder()
+					.task(savedTask)
+					.member(member)
+					.status(TaskStatus.FORKED)
+					.xpGranted(true)
+					.grantedAt(LocalDateTime.now())
+					.build();
+			taskXpLogRepository.save(log);
+		}
+
 		return IssueConverter.toIssueAssignDTO(task,false);
 	}
 }

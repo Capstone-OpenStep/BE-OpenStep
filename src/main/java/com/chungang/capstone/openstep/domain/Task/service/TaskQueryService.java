@@ -1,11 +1,13 @@
 package com.chungang.capstone.openstep.domain.Task.service;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.chungang.capstone.openstep.domain.Rank.entity.TaskXpLog;
+import com.chungang.capstone.openstep.domain.Rank.repository.TaskXpLogRepository;
+import com.chungang.capstone.openstep.domain.Rank.service.RankCommandService;
 import org.springframework.stereotype.Service;
 
 import com.chungang.capstone.openstep.domain.Github.service.GitHubStatusResolverService;
@@ -26,6 +28,8 @@ import lombok.RequiredArgsConstructor;
 public class TaskQueryService {
 
 	private final TaskRepository taskRepository;
+	private final RankCommandService rankCommandService;
+	private final TaskXpLogRepository taskXpLogRepository;
 	private final GitHubStatusResolverService githubStatusResolver;
 
 	public TaskResponseDTO.TaskDetail getTaskDetailById(Long taskId, Member member) {
@@ -121,22 +125,78 @@ public class TaskQueryService {
 			.collect(Collectors.toList());
 	}
 
+//	public List<Task> updateAllTaskStatus(Member member) {
+//		List<Task> tasks = taskRepository.findAllByMember(member);
+//		List<Task> updatedTasks = tasks.stream()
+//			.map(task -> {
+//				TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
+//				if (task.getStatus() != resolvedStatus) {
+//					task.updateStatus(resolvedStatus);
+//					return Optional.of(taskRepository.save(task));
+//				}
+//				return Optional.<Task>empty();
+//			})
+//			.flatMap(Optional::stream) // Optional 중 값 있는 것만 추출
+//			.collect(Collectors.toList());
+//
+//		return updatedTasks;
+//	}
+
 	public List<Task> updateAllTaskStatus(Member member) {
 		List<Task> tasks = taskRepository.findAllByMember(member);
+
 		List<Task> updatedTasks = tasks.stream()
-			.map(task -> {
-				TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
-				if (task.getStatus() != resolvedStatus) {
-					task.updateStatus(resolvedStatus);
-					return Optional.of(taskRepository.save(task));
-				}
-				return Optional.<Task>empty();
-			})
-			.flatMap(Optional::stream) // Optional 중 값 있는 것만 추출
-			.collect(Collectors.toList());
+				.map(task -> {
+					TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
+					if (task.getStatus() != resolvedStatus) {
+						task.updateStatus(resolvedStatus);
+						Task saved = taskRepository.save(task);
+
+						handleXpGranting(member, saved, resolvedStatus);
+
+						return Optional.of(saved);
+					}
+					return Optional.<Task>empty();
+				})
+				.flatMap(Optional::stream)
+				.collect(Collectors.toList());
 
 		return updatedTasks;
 	}
+
+
+	private void handleXpGranting(Member member, Task task, TaskStatus newStatus) {
+		// 중복 지급 방지
+		if (taskXpLogRepository.existsByTaskAndStatus(task, newStatus)) return;
+
+		boolean shouldGrant = true;
+		if (newStatus == TaskStatus.PR) {
+			LocalDateTime today = LocalDate.now().atStartOfDay();
+			LocalDateTime tomorrow = today.plusDays(1);
+
+			int prCountToday = taskXpLogRepository.countByMemberAndStatusAndGrantedAtBetween(
+					member, TaskStatus.PR, today, tomorrow);
+			shouldGrant = prCountToday < 3;
+		}
+
+		// XP 지급
+		if (shouldGrant) {
+			rankCommandService.addXp(member, newStatus.getXp());
+		}
+
+		// 로그 기록
+		TaskXpLog log = TaskXpLog.builder()
+				.task(task)
+				.member(member)
+				.status(newStatus)
+				.xpGranted(shouldGrant)
+				.grantedAt(LocalDateTime.now())
+				.build();
+
+		taskXpLogRepository.save(log);
+	}
+
+
 
 	public Map<String, Long> getTaskStatistics(Member member) {
 		List<Task> tasks = taskRepository.findAllByMember(member);
