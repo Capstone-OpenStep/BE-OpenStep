@@ -115,20 +115,22 @@ public class IssueController {
 	}
 
 	@GetMapping("/detail-by-url")
-	@Operation(summary = "GitHub URL 기반 이슈 상세 조회", description = "검색된 이슈의 GitHub URL로 상세 정보를 조회합니다.")
-	public ApiResponse<IssueResponseDTO.IssueDetailDTO> getIssueDetailByUrl(@RequestParam String url) {
-		GitHubIssueResponse.IssueNode node = gitHubGraphQLService.fetchIssueByUrl(url);
-		if (node == null) throw new IssueHandler(ErrorStatus.ISSUE_NOT_FOUND);
-		Issue issue = IssueConverter.fromGitHubIssueNode(node);
+	@Operation(summary = "GitHub URL 기반 이슈 + 레포 상세 조회", description = "GitHub URL로 이슈의 상세 정보를 조회하고, 이슈가 속한 레포지토리 정보도 함께 제공합니다.")
+	public ApiResponse<IssueResponseDTO.IssueDetailWithRepoDTO> getIssueDetailByUrl(@RequestParam String url) {
+		IssueResponseDTO.IssueDetailWithRepoDTO dto = issueQueryService.getIssueDetailWithRepoByUrl(url);
 		try {
-			String raw = openAIService.summarizeIssue(issue.getTitle(), issue.getBody());
-			issue.setSummary(openAIService.rewriteNaturalKorean(raw));
+			String raw = openAIService.summarizeIssue(dto.getIssue().getTitle(), dto.getIssue().getBody());
+			dto.getIssue().setSummary(openAIService.rewriteNaturalKorean(raw));
 		} catch (Exception e) {
 			log.warn("[SUMMARY] 요약 실패: {}", url, e);
-			issue.setSummary("요약을 생성할 수 없습니다.");
+			dto.getIssue().setSummary("요약을 생성할 수 없습니다.");
 		}
-		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_DETAIL_OK, IssueConverter.toIssueDetailDTO(issue));
+		return ApiResponse.onSuccess(SuccessStatus.ISSUE_GET_DETAIL_OK, dto);
 	}
+
+
+
+
 
 
 

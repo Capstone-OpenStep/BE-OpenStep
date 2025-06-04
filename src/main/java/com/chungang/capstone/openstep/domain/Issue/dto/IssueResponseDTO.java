@@ -1,9 +1,7 @@
 package com.chungang.capstone.openstep.domain.Issue.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.util.List;
 
 public class IssueResponseDTO {
@@ -32,6 +30,7 @@ public class IssueResponseDTO {
 
     @Getter
     @Builder
+    @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class IssueDetailDTO {
@@ -51,6 +50,38 @@ public class IssueResponseDTO {
         private String repoName;
         private String repoUrl;
     }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class IssueDetailWithRepoDTO {
+        private IssueDetailDTO issue;
+        private RepoSummaryDTO repo;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class RepoSummaryDTO {
+        private Long repoId;
+        private String repoName;
+        private String summary;
+        private String ownerName;
+        private String ownerAvatarUrl;
+        private String description;
+        private String language;
+        private int stars;
+        private int watchers;
+        private int forks;
+        private int openIssues;
+        private int closedIssues;
+        private int beginnerIssueCount;
+        private String githubUrl;
+        private String readmeUrl;
+    }
+
 
     @Builder
     public record IssueAssignmentDTO(

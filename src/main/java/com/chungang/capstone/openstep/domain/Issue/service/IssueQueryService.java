@@ -2,6 +2,7 @@ package com.chungang.capstone.openstep.domain.Issue.service;
 
 import com.chungang.capstone.openstep.domain.Bookmark.repository.BookmarkRepository;
 import com.chungang.capstone.openstep.domain.Github.dto.GitHubIssueResponse;
+import com.chungang.capstone.openstep.domain.Github.dto.GitHubRepoResponse;
 import com.chungang.capstone.openstep.domain.Github.service.GitHubGraphQLService;
 import com.chungang.capstone.openstep.domain.Issue.converter.IssueConverter;
 import com.chungang.capstone.openstep.domain.Issue.dto.IssueResponseDTO;
@@ -416,6 +417,29 @@ public class IssueQueryService {
         if (start >= end) return List.of();
 
         return filtered.subList(start, end);
+    }
+
+
+    public IssueResponseDTO.IssueDetailWithRepoDTO getIssueDetailWithRepoByUrl(String url) {
+        // 1. 이슈 정보 조회
+        GitHubIssueResponse.IssueNode issueNode = gitHubGraphQLService.fetchIssueByUrl(url);
+        if (issueNode == null) throw new IssueHandler(ErrorStatus.ISSUE_NOT_FOUND);
+
+        // 2. 레포지토리 정보 조회
+        String owner = issueNode.getRepoInfo().getOwner().getLogin();
+        String repo = issueNode.getRepoInfo().getName();
+        GitHubRepoResponse repoResponse = gitHubGraphQLService.searchRepositories(owner + "/" + repo);
+
+        GitHubRepoResponse.Node repoNode = repoResponse.getData().getSearch().getEdges().stream()
+                .map(GitHubRepoResponse.Edge::getNode)
+                .filter(n -> n.getName().equals(repo))
+                .findFirst()
+                .orElseThrow(() -> new IssueHandler(ErrorStatus.REPO_NOT_FOUND));
+
+        // 3. DTO 변환
+        IssueResponseDTO.IssueDetailWithRepoDTO dto = IssueConverter.fromGitHubIssueNodeWithRepo(issueNode, repoNode);
+
+        return dto;
     }
 
 
