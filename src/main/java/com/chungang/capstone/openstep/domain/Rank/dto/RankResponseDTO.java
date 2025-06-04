@@ -23,6 +23,8 @@ public class RankResponseDTO {
     @AllArgsConstructor
     public static class MyLevelDTO {
         private int level;
+        private int levelPercent;
+        private int percentRemaining;
     }
 
     @Getter
@@ -32,8 +34,8 @@ public class RankResponseDTO {
     public static class RankDTO {
         private Long memberId;
         private String githubId;
+        private int rank;
         private int xp;
-        private int level;
     }
 
     @Getter

@@ -11,18 +11,19 @@ public class RankConverter {
                 .build();
     }
 
-    public static RankResponseDTO.MyLevelDTO toMyLevelDTO(int level) {
+    public static RankResponseDTO.MyLevelDTO toMyLevelDTO(int level, int levelPercent) {
         return RankResponseDTO.MyLevelDTO.builder()
                 .level(level)
+                .levelPercent(levelPercent)
                 .build();
     }
 
-    public static RankResponseDTO.RankDTO toRankDTO(Rank rank) {
+    public static RankResponseDTO.RankDTO toRankDTO(Rank rank, int rankPosition) {
         return RankResponseDTO.RankDTO.builder()
                 .memberId(rank.getMember().getMemberId())
                 .githubId(rank.getMember().getGithubId())
                 .xp(rank.getXp())
-                .level(rank.getLevel())
+                .rank(rankPosition)
                 .build();
     }
 }
