@@ -58,10 +58,12 @@ public class TaskController {
 		return ApiResponse.onSuccess(SuccessStatus.TASK_BRANCH_GET_OK, taskQueryService.getStatusByTaskId(taskId,member));
 	}
 
+
+
 	@Operation(summary = "특정 테스크의 PR URL 업데이트 API", description = "특정 오픈소스 레포지토리의 기여(테스크) PR URL을 업데이트합니다. forked 상태 이외의 상태에서만 가능합니다.")
 	@PatchMapping("/{task-id}/pr")
 	public ApiResponse<TaskResponseDTO.TaskDetail> updatePRUrl (
-		@PathVariable Long taskId,
+		@PathVariable("task-id") Long taskId,
 		@RequestParam(name = "url") String prUrl ){
 		Member member = SecurityUtils.getCurrentMember();
 		TaskResponseDTO.TaskDetail taskDetail = taskQueryService.updatePRUrl(taskId, prUrl, member);
