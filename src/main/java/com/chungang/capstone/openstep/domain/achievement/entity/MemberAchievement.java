@@ -1,9 +1,9 @@
-package com.chungang.capstone.openstep.domain.acheivement.entity;
+package com.chungang.capstone.openstep.domain.achievement.entity;
 
 import java.time.LocalDateTime;
 
 import com.chungang.capstone.openstep.domain.Member.entity.Member;
-import com.chungang.capstone.openstep.domain.acheivement.enums.AcheivementType;
+import com.chungang.capstone.openstep.domain.achievement.enums.AchievementType;
 import com.chungang.capstone.openstep.domain.common.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "member_achievement", uniqueConstraints = @UniqueConstraint(columnNames = {"member_id", "type"}))
+@Table(name = "member_achievements", uniqueConstraints = @UniqueConstraint(columnNames = {"member_id", "type"}))
 public class MemberAchievement extends BaseEntity {
 
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,7 +38,7 @@ public class MemberAchievement extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private AcheivementType type;
+	private AchievementType type;
 
 	@Column(nullable = false)
 	private int currentProgress = 0;
@@ -50,14 +50,14 @@ public class MemberAchievement extends BaseEntity {
 	private LocalDateTime lastProgressAt;
 
 	@Builder
-	private MemberAchievement(Member member, AcheivementType type) {
+	private MemberAchievement(Member member, AchievementType type) {
 		this.member = member;
 		this.type = type;
 		member.getAchievements().add(this);// 양방향 연관관계 설정
 	}
 
 
-	public static MemberAchievement create(Member member, AcheivementType type) {
+	public static MemberAchievement create(Member member, AchievementType type) {
 		MemberAchievement achievement = new MemberAchievement();
 		achievement.member = member;
 		achievement.type = type;
@@ -95,6 +95,11 @@ public class MemberAchievement extends BaseEntity {
 
 	public Long getMemberId() {
 		return member.getMemberId();
+	}
+
+	public void resetProgress() {
+		this.currentProgress = 0;
+		this.lastProgressAt = null;
 	}
 
 }

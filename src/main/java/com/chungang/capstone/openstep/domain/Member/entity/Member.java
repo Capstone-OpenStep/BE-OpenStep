@@ -3,8 +3,8 @@ package com.chungang.capstone.openstep.domain.Member.entity;
 import com.chungang.capstone.openstep.domain.Bookmark.entity.Bookmark;
 import com.chungang.capstone.openstep.domain.Rank.entity.Rank;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
-import com.chungang.capstone.openstep.domain.acheivement.entity.MemberAchievement;
-import com.chungang.capstone.openstep.domain.acheivement.enums.AcheivementType;
+import com.chungang.capstone.openstep.domain.achievement.entity.MemberAchievement;
+import com.chungang.capstone.openstep.domain.achievement.enums.AchievementType;
 import com.chungang.capstone.openstep.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -64,22 +64,28 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<MemberAchievement> achievements = new ArrayList<>();
 
-    public List<MemberAchievement> getUnLockedAchievements(AcheivementType type) {
+    public List<MemberAchievement> getUnLockedAchievements() {
         return achievements.stream()
             .filter(MemberAchievement::isUnlocked)
             .toList();
     }
 
-    public Optional<MemberAchievement> getAcheivmentByType(AcheivementType type) {
+    public Optional<MemberAchievement> getAchievement(AchievementType type) {
         return achievements.stream()
             .filter(achievement -> achievement.getType() == type)
             .findFirst();
     }
 
-    public boolean hasUnlockedAchievement(AcheivementType type) {
-        return getAcheivmentByType(type)
+    public boolean hasUnlockedAchievement(AchievementType type) {
+        return getAchievement(type)
             .map(MemberAchievement::isUnlocked)
             .orElse(false);
+    }
+
+    public int getUnlockedAchievementCount() {
+        return (int)achievements.stream()
+            .filter(MemberAchievement::isUnlocked)
+            .count();
     }
 
     public void updateGithubAccessToken(String githubAccessToken) {

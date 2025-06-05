@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import com.chungang.capstone.openstep.domain.Rank.entity.TaskXpLog;
 import com.chungang.capstone.openstep.domain.Rank.repository.TaskXpLogRepository;
 import com.chungang.capstone.openstep.domain.Rank.service.RankCommandService;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.chungang.capstone.openstep.domain.Github.service.GitHubStatusResolverService;
@@ -18,13 +20,18 @@ import com.chungang.capstone.openstep.domain.Task.dto.TaskResponseDTO;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
 import com.chungang.capstone.openstep.domain.Task.entity.TaskStatus;
 import com.chungang.capstone.openstep.domain.Task.repository.TaskRepository;
+import com.chungang.capstone.openstep.domain.achievement.event.PrCreatedEvent;
+import com.chungang.capstone.openstep.domain.achievement.event.TaskActivityEvent;
+import com.chungang.capstone.openstep.domain.achievement.event.TaskCompletedEvent;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
 import com.chungang.capstone.openstep.global.apiPayload.exception.TaskException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TaskQueryService {
 
 	private final TaskRepository taskRepository;
@@ -42,6 +49,7 @@ public class TaskQueryService {
 			task.updateStatus(resolvedStatus);
 			taskRepository.save(task);
 		}
+
 		return TaskConverter.toTaskDetail(task);
 	}
 
@@ -54,10 +62,12 @@ public class TaskQueryService {
 	public TaskResponseDTO.Status getStatusByTaskId(Long taskId, Member member) {
 		Task task = taskRepository.findById(taskId).orElseThrow(() ->
 			new TaskException(ErrorStatus.TASK_NOT_FOUND));
+
+		TaskStatus oldStatus = task.getStatus();
 		TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
 
 		// DB 캐시 상태가 다르면 update
-		if (task.getStatus() != resolvedStatus) {
+		if (oldStatus != resolvedStatus) {
 			task.updateStatus(resolvedStatus);
 			taskRepository.save(task);
 		}
@@ -147,12 +157,15 @@ public class TaskQueryService {
 
 		List<Task> updatedTasks = tasks.stream()
 				.map(task -> {
+					TaskStatus oldStatus = task.getStatus();
 					TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
-					if (task.getStatus() != resolvedStatus) {
+
+					if (oldStatus!= resolvedStatus) {
 						task.updateStatus(resolvedStatus);
 						Task saved = taskRepository.save(task);
 
 						handleXpGranting(member, saved, resolvedStatus);
+
 
 						return Optional.of(saved);
 					}
@@ -224,12 +237,13 @@ public class TaskQueryService {
 	public TaskResponseDTO.TaskDetail updatePRUrl(Long taskId,String prUrl ,Member member) {
 	Task task = taskRepository.findById(taskId).orElseThrow(() ->
 			new TaskException(ErrorStatus.TASK_NOT_FOUND));
+		TaskStatus oldStatus = task.getStatus();
 		TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
 
 		// DB 캐시 상태가 다르면 update
-		if (task.getStatus() != resolvedStatus) {
+		if (oldStatus != resolvedStatus) {
 			task.updateStatus(resolvedStatus);
-			task=taskRepository.save(task);
+			task = taskRepository.save(task);
 		}
 
 		task.updatePrUrl(prUrl);
