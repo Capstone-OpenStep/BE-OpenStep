@@ -93,7 +93,7 @@ public class GithubRestServiceImpl implements GitHubRestService {
 
 	@Override
 	public PullRequestResponse.PullRequestRes findPullRequest(String owner, String repo, String headRefName, String githubId,String accessToken) {
-	    String url = "https://api.github.com/repos/" + owner + "/" + repo + "/pulls?state=all&head=" + githubId + ":" + headRefName;
+	    String url = "https://api.github.com/repos/" + owner + "/" + repo + "/pulls?state=all&head=" + headRefName;
 
 	    try {
 	        RestTemplate restTemplate = new RestTemplate();
@@ -154,6 +154,13 @@ public class GithubRestServiceImpl implements GitHubRestService {
 			throw new GithubRestException(ErrorStatus.GITHUB_REST_ERROR);
 		}
 		return false;// 리뷰가 없거나 오류 발생 시 false 반환
+	}
+
+	private String buildPullRequestUrl(String originalOwner, String originalRepo, String myGithubId, String branchName) {
+		return String.format(
+			"https://api.github.com/repos/%s/%s/pulls?state=all&head=%s:%s&sort=updated&direction=desc",
+			originalOwner, originalRepo, myGithubId, branchName
+		);
 	}
 
 }
