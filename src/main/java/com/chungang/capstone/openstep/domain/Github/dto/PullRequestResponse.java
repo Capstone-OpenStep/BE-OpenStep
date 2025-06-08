@@ -2,13 +2,20 @@ package com.chungang.capstone.openstep.domain.Github.dto;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class PullRequestResponse {
 	public record PullRequestRes(
 		String title,
 		int number,
 		String state,
+
 		String url,
+
+		@JsonProperty("created_at")
 		String createdAt,
+
+		@JsonProperty("merged_at")
 		String mergedAt,
 		Repository repository,
 		ClosingIssueWrapper closingIssuesReferences
@@ -23,12 +30,6 @@ public class PullRequestResponse {
 		String authorAvatarUrl,
 		LabelWrapper labels
 	) {
-		public List<String> flatLabelNames() {
-			if (labels == null || labels.nodes() == null) return List.of();
-			return labels.nodes().stream()
-				.map(LabelNode::name)
-				.toList();
-		}
 	}
 	record Author(String login) {}
 	record LabelWrapper(

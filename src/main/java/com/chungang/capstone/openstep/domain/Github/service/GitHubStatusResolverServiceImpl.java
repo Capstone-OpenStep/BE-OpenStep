@@ -54,21 +54,11 @@ public class GitHubStatusResolverServiceImpl implements GitHubStatusResolverServ
             return newStatus;
         }
 
-//        TaskStatus newStatus;
-//        if (pr.mergedAt() != null) {
-//            newStatus = TaskStatus.MERGED;
-//        } else if (Objects.equals(pr.state(), "closed")) {
-//            newStatus = TaskStatus.REJECTED;
-//        } else if (gitHubRestService.hasReview(owner, repo, pr.number(), githubToken)) {
-//            newStatus = TaskStatus.REVIEW;
-//        } else {
-//            newStatus = TaskStatus.PR; // PR 생성만 된 상태
-//        }
         // 머지 or 반려 여부
         TaskStatus newStatus;
         if (pr.mergedAt() != null) {
             newStatus = TaskStatus.MERGED;
-        } else if (Objects.equals(pr.state(), "closed") && pr.mergedAt() == null) {
+        } else if (Objects.equals(pr.state(), "closed")) {
             newStatus = TaskStatus.REJECTED;
         } else if (gitHubRestService.hasReview(owner, repo, pr.number(), githubToken)) {
             newStatus = TaskStatus.REVIEW;
