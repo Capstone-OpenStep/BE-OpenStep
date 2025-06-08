@@ -3,6 +3,7 @@ package com.chungang.capstone.openstep.domain.achievement.entity;
 import java.time.LocalDateTime;
 
 import com.chungang.capstone.openstep.domain.Member.entity.Member;
+import com.chungang.capstone.openstep.domain.Task.entity.Task;
 import com.chungang.capstone.openstep.domain.achievement.enums.AchievementType;
 import com.chungang.capstone.openstep.domain.common.BaseEntity;
 
@@ -49,19 +50,29 @@ public class MemberAchievement extends BaseEntity {
 	private LocalDateTime unlockedAt;
 	private LocalDateTime lastProgressAt;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "trigger_task_id")
+	private Task triggerTask;  // 업적을 달성하게 한 Task
+
+	@Column(name = "trigger_task_title")
+	private String triggerTaskTitle;  // Task 제목 (스냅샷)
+
+	@Column(name = "trigger_repo_name")
+	private String triggerRepoName;   // Repo 이름 (스냅샷)
+
 	@Builder
 	private MemberAchievement(Member member, AchievementType type) {
 		this.member = member;
 		this.type = type;
-		member.getAchievements().add(this);// 양방향 연관관계 설정
+		member.getMemberAchievements().add(this);// 양방향 연관관계 설정
 	}
 
 
 	public static MemberAchievement create(Member member, AchievementType type) {
-		MemberAchievement achievement = new MemberAchievement();
-		achievement.member = member;
-		achievement.type = type;
-		return achievement;
+		MemberAchievement memberAchievement = new MemberAchievement();
+		memberAchievement.member = member;
+		memberAchievement.type = type;
+		return memberAchievement;
 	}
 
 	public void incrementProgress(){
@@ -102,4 +113,37 @@ public class MemberAchievement extends BaseEntity {
 		this.lastProgressAt = null;
 	}
 
+	//업적 달성 시 트리거 Task 정보 저장
+	public void unlockWithTrigger(Task triggerTask) {
+		this.unlocked = true;
+		this.unlockedAt = LocalDateTime.now();
+		this.currentProgress = this.type.getTargetCount();
+
+		// 트리거 Task 정보 저장
+		if (triggerTask != null) {
+			this.triggerTask = triggerTask;
+			this.triggerTaskTitle = triggerTask.getIssue().getTitle();
+			this.triggerRepoName = triggerTask.getIssue().getRepo().getRepoName();
+		}
+	}
+
+	// 진행도 증가 시 최근 Task 정보 업데이트
+	public void incrementProgressWithTrigger(Task triggerTask) {
+		if (this.unlocked) return;
+
+		this.currentProgress++;
+		this.lastProgressAt = LocalDateTime.now();
+
+		// 최근 작업한 Task 정보 업데이트
+		if (triggerTask != null) {
+			this.triggerTask = triggerTask;
+			this.triggerTaskTitle = triggerTask.getIssue().getTitle();
+			this.triggerRepoName = triggerTask.getIssue().getRepo().getRepoName();
+		}
+
+		if (isTargetReached()) {
+			this.unlocked = true;
+			this.unlockedAt = LocalDateTime.now();
+		}
+	}
 }
