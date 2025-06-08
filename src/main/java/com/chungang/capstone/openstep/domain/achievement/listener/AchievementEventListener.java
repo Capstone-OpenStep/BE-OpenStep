@@ -58,7 +58,7 @@ public class AchievementEventListener {
 		try{
 			//bughunter 업적 체크
 			if( event.isHasBugKeywords()) {
-				achievementService.incrementProgress(event.getMemberId(), AchievementType.BUG_HUNTER);
+				achievementService.unlock(event.getMemberId(), AchievementType.BUG_HUNTER);
 				log.info("Bug Hunter achievement progress incremented for member: {}", event.getMemberId());
 			}
 
