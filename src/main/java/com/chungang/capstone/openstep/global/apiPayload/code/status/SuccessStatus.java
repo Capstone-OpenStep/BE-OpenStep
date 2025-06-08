@@ -59,7 +59,10 @@ public enum SuccessStatus implements BaseCode {
     // Rank 관련 응답
     RANK_GET_XP_OK(HttpStatus.OK,"RANK_5001", "사용자 XP 조회에 성공했습니다."),
     RANK_GET_LEVEL_OK(HttpStatus.OK,"RANK_5002", "사용자 레벨 조회에 성공했습니다."),
-    RANK_GET_ALL_OK(HttpStatus.OK,"RANK_5003", "전체 랭킹 조회에 성공했습니다.");
+    RANK_GET_ALL_OK(HttpStatus.OK,"RANK_5003", "전체 랭킹 조회에 성공했습니다."),
+
+    //업적
+    ACHIEVEMENT_GET_ALL_OK(HttpStatus.OK, "ACHIEVEMENT_6001", "사용자 업적 조회에 성공했습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

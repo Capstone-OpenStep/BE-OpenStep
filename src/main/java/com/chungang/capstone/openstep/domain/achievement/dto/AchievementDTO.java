@@ -4,10 +4,14 @@ import java.time.LocalDateTime;
 
 import com.chungang.capstone.openstep.domain.achievement.entity.MemberAchievement;
 import com.chungang.capstone.openstep.domain.achievement.enums.AchievementType;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Builder;
+import lombok.Getter;
 
+@Getter
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AchievementDTO {
 	private Long id;
 	private AchievementType type;
