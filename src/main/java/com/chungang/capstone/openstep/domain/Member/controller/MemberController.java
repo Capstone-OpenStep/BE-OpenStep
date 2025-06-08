@@ -16,6 +16,9 @@ import com.chungang.capstone.openstep.domain.Member.dto.MemberRequestDTO;
 import com.chungang.capstone.openstep.domain.Member.dto.MemberResponseDTO;
 import com.chungang.capstone.openstep.domain.Member.service.MemberCommandService;
 import com.chungang.capstone.openstep.domain.Member.service.MemberQueryService;
+import com.chungang.capstone.openstep.domain.achievement.dto.AchievementDTO;
+import com.chungang.capstone.openstep.domain.achievement.entity.MemberAchievement;
+import com.chungang.capstone.openstep.domain.achievement.service.AchievementService;
 import com.chungang.capstone.openstep.global.apiPayload.ApiResponse;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.SuccessStatus;
 import com.chungang.capstone.openstep.global.security.util.SecurityUtils;
@@ -36,6 +39,7 @@ public class MemberController {
 	private final MemberQueryService memberQueryService;
 	private final MemberCommandService memberCommandService;
 	private final GitHubGraphQLService gitHubGraphQLService;
+	private final AchievementService achievementService;
 
 	@PostMapping("/sign_up")
 	@Operation(summary = "회원가입", description = "회원가입을 진행합니다.")
@@ -150,6 +154,13 @@ public class MemberController {
 		return ApiResponse.onSuccess(SuccessStatus.MEMBER_GET_GITHUB_PROFILE_OK, dto);
 	}
 
-
+	//사용자의 모든 업적 조회
+	@GetMapping("/achievements")
+	@Operation(summary = "사용자의 모든 업적 조회", description = "사용자가 달성한 모든 업적을 조회합니다.")
+	public ApiResponse<List<AchievementDTO>> getMemberAchievements() {
+		Long memberId= SecurityUtils.getCurrentMemberId();
+		List<MemberAchievement> achievements = achievementService.getMemberUnlockedAchievements(memberId);
+		return ApiResponse.onSuccess(SuccessStatus.ACHIEVEMENT_GET_ALL_OK,achievements.stream().map(AchievementDTO::from).toList());
+	}
 
 }

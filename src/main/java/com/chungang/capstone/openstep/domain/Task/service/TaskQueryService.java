@@ -20,9 +20,11 @@ import com.chungang.capstone.openstep.domain.Task.dto.TaskResponseDTO;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
 import com.chungang.capstone.openstep.domain.Task.entity.TaskStatus;
 import com.chungang.capstone.openstep.domain.Task.repository.TaskRepository;
+import com.chungang.capstone.openstep.domain.achievement.entity.MemberAchievement;
 import com.chungang.capstone.openstep.domain.achievement.event.PrCreatedEvent;
 import com.chungang.capstone.openstep.domain.achievement.event.TaskActivityEvent;
 import com.chungang.capstone.openstep.domain.achievement.event.TaskCompletedEvent;
+import com.chungang.capstone.openstep.domain.achievement.service.AchievementService;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
 import com.chungang.capstone.openstep.global.apiPayload.exception.TaskException;
 
@@ -38,19 +40,30 @@ public class TaskQueryService {
 	private final RankCommandService rankCommandService;
 	private final TaskXpLogRepository taskXpLogRepository;
 	private final GitHubStatusResolverService githubStatusResolver;
+	private final AchievementService achievementService;
 
 	public TaskResponseDTO.TaskDetail getTaskDetailById(Long taskId, Member member) {
 		Task task = taskRepository.findById(taskId).orElseThrow(() ->
 			new TaskException(ErrorStatus.TASK_NOT_FOUND));
+
+		TaskStatus oldStatus = task.getStatus();
 		TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
 
 		// DB 캐시 상태가 다르면 update
-		if (task.getStatus() != resolvedStatus) {
+		if (oldStatus != resolvedStatus) {
 			task.updateStatus(resolvedStatus);
 			taskRepository.save(task);
 		}
 
-		return TaskConverter.toTaskDetail(task);
+		TaskResponseDTO.TaskDetail taskDetail = TaskConverter.toTaskDetail(task);
+
+		// 이 Task와 관련된 업적 정보 조회
+		List<TaskResponseDTO.AchievementDTO> relatedAchievements = achievementService.getRelatedAchievements(
+			member.getMemberId(),
+			taskId
+		);
+
+		return taskDetail.withAchievements(relatedAchievements);
 	}
 
 	public TaskResponseDTO.TaskBranchName getBranchNameByTask(Long taskId, Member member) {

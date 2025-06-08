@@ -1,5 +1,8 @@
 package com.chungang.capstone.openstep.domain.Github.service;
 
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.http.*;
@@ -92,9 +95,17 @@ public class GithubRestServiceImpl implements GitHubRestService {
 	// }
 
 	@Override
-	public PullRequestResponse.PullRequestRes findPullRequest(String owner, String repo, String headRefName, String githubId,String accessToken) {
-	    String url = "https://api.github.com/repos/" + owner + "/" + repo + "/pulls?state=all&head=" + headRefName;
+	public PullRequestResponse.PullRequestRes findPullRequest(String owner, String repo, String branchName, String githubId,String accessToken) {
+	    // String url = "https://api.github.com/repos/" + owner + "/" + repo + "/pulls?state=all&head=" + branchName;
 
+		String encodedBranch = URLEncoder.encode(branchName, StandardCharsets.UTF_8);
+		String urlStr = String.format(
+			"https://api.github.com/repos/%s/%s/pulls?state=all&head=%s:%s",
+			owner, repo, githubId, encodedBranch
+		);
+
+		URI uri = URI.create(urlStr);
+		log.info("Direct URI creation: {}", uri.toString());
 	    try {
 	        RestTemplate restTemplate = new RestTemplate();
 			HttpHeaders headers = new HttpHeaders();
@@ -103,8 +114,10 @@ public class GithubRestServiceImpl implements GitHubRestService {
 			headers.setAccept(List.of(MediaType.APPLICATION_JSON));
 	        HttpEntity<Void> entity = new HttpEntity<>(headers);
 
+			log.info("Calling GitHub API: {}", uri);
+
 	        ResponseEntity<PullRequestResponse.PullRequestRes[]> response = restTemplate.exchange(
-	                url,
+	                uri,
 	                HttpMethod.GET,
 	                entity,
 	                PullRequestResponse.PullRequestRes[].class
@@ -112,8 +125,11 @@ public class GithubRestServiceImpl implements GitHubRestService {
 
 	        PullRequestResponse.PullRequestRes[] pullRequests = response.getBody();
 	        if (pullRequests != null && pullRequests.length > 0) {
+				log.info("Found {} PR(s) for branch: {}", pullRequests.length, branchName);
 	            return pullRequests[0]; // PR은 보통 1개면 충분하므로 첫 번째 것 반환
-	        }
+	        } else {
+				log.info("No PR found for branch: {}", branchName);
+			}
 
 	    } catch (Exception e) {
 	        log.error("GitHub PR 조회 중 예외 발생", e);
@@ -156,11 +172,19 @@ public class GithubRestServiceImpl implements GitHubRestService {
 		return false;// 리뷰가 없거나 오류 발생 시 false 반환
 	}
 
-	private String buildPullRequestUrl(String originalOwner, String originalRepo, String myGithubId, String branchName) {
-		return String.format(
-			"https://api.github.com/repos/%s/%s/pulls?state=all&head=%s:%s&sort=updated&direction=desc",
-			originalOwner, originalRepo, myGithubId, branchName
-		);
+	private String buildPullRequestUrl(String owner, String repo, String githubId, String branchName) {
+		try {
+			//브랜치명 URL 인코딩
+			String encodedBranch = URLEncoder.encode(branchName, StandardCharsets.UTF_8);
+
+			return String.format(
+				"https://api.github.com/repos/%s/%s/pulls?state=all&head=%s:%s",
+				owner, repo, githubId, encodedBranch
+			);
+		} catch (Exception e) {
+			log.error("Error encoding branch name: {}", branchName, e);
+			return null;
+		}
 	}
 
 }

@@ -74,16 +74,16 @@ public class Member extends BaseEntity {
     private List<Rank> ranks = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<MemberAchievement> achievements = new ArrayList<>();
+    private List<MemberAchievement> memberAchievements = new ArrayList<>();
 
     public List<MemberAchievement> getUnLockedAchievements() {
-        return achievements.stream()
+        return memberAchievements.stream()
             .filter(MemberAchievement::isUnlocked)
             .toList();
     }
 
     public Optional<MemberAchievement> getAchievement(AchievementType type) {
-        return achievements.stream()
+        return memberAchievements.stream()
             .filter(achievement -> achievement.getType() == type)
             .findFirst();
     }
@@ -95,7 +95,7 @@ public class Member extends BaseEntity {
     }
 
     public int getUnlockedAchievementCount() {
-        return (int)achievements.stream()
+        return (int)memberAchievements.stream()
             .filter(MemberAchievement::isUnlocked)
             .count();
     }

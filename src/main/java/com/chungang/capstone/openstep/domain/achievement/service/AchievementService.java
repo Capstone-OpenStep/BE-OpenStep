@@ -3,6 +3,8 @@ package com.chungang.capstone.openstep.domain.achievement.service;
 import java.util.List;
 
 import com.chungang.capstone.openstep.domain.Member.entity.Member;
+import com.chungang.capstone.openstep.domain.Task.dto.TaskResponseDTO;
+import com.chungang.capstone.openstep.domain.Task.entity.Task;
 import com.chungang.capstone.openstep.domain.achievement.entity.MemberAchievement;
 import com.chungang.capstone.openstep.domain.achievement.enums.AchievementType;
 
@@ -28,4 +30,12 @@ public interface AchievementService {
 	public Member getMember(Long memberId);
 
 	boolean hasUnlockedAchievement(Long memberId, AchievementType achievementType);
+
+
+
+	public List<TaskResponseDTO.AchievementDTO> getRelatedAchievements(
+		Long memberId,
+		Long taskId
+	);
+
 }

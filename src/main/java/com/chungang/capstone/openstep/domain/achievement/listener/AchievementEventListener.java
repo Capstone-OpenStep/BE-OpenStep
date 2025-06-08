@@ -23,6 +23,7 @@ import com.chungang.capstone.openstep.domain.achievement.event.TaskActivityEvent
 import com.chungang.capstone.openstep.domain.achievement.event.TaskCompletedEvent;
 import com.chungang.capstone.openstep.domain.achievement.service.AchievementService;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,24 +36,35 @@ public class AchievementEventListener {
 	private final TaskRepository taskRepository;
 
 	@EventListener
-	@Async("achievementExecutor")
-	public void handlePrCreatedEvent(PrCreatedEvent event) {
-		log.info("processing PR created event for member: {}, PR : {}", event.getMemberId(), event.getTaskId());
+	@Transactional
+	public void handlePrCreatedEventSync(PrCreatedEvent event) {
+		log.info("processing PR created Sync event for member: {}, PR : {}", event.getMemberId(), event.getTaskId());
 
 		try{
 			//first commit 업적 체크
 			checkFirstCommitAchievement(event);
+		}catch (Exception e){
 
+			// 예외 발생 시 로깅. 메인 기능에 영향주면 안되니께 업적시스템이
+			log.error("Error processing PR created event for member: {}, PR : {}", event.getMemberId(), event.getTaskId(), e);
+		}
+	}
+
+	@EventListener
+	@Async("achievementExecutor")
+	public void handlePrCreatedEventAsync(PrCreatedEvent event) {
+		log.info("processing PR created Async event for member: {}, PR : {}", event.getMemberId(), event.getTaskId());
+
+		try{
 			//bughunter 업적 체크
 			if( event.isHasBugKeywords()) {
-				achievementService.incrementProgress(event.getMemberId(), AchievementType.BUG_HUNTER);
+				achievementService.unlock(event.getMemberId(), AchievementType.BUG_HUNTER);
 				log.info("Bug Hunter achievement progress incremented for member: {}", event.getMemberId());
 			}
 
 			//PR 마스터 업적 체크
 			achievementService.incrementProgress(event.getMemberId(), AchievementType.PR_MASTER);
 		}catch (Exception e){
-
 			// 예외 발생 시 로깅. 메인 기능에 영향주면 안되니께 업적시스템이
 			log.error("Error processing PR created event for member: {}, PR : {}", event.getMemberId(), event.getTaskId(), e);
 		}
