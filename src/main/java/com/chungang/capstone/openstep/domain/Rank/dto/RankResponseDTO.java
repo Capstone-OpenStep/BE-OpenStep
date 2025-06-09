@@ -33,6 +33,7 @@ public class RankResponseDTO {
     @AllArgsConstructor
     public static class RankDTO {
         private Long memberId;
+        private String avatarUrl;
         private String githubId;
         private int rank;
         private int xp;
