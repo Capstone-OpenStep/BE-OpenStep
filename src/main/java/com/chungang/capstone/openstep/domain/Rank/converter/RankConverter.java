@@ -22,6 +22,7 @@ public class RankConverter {
         return RankResponseDTO.RankDTO.builder()
                 .memberId(rank.getMember().getMemberId())
                 .githubId(rank.getMember().getGithubId())
+                .avatarUrl(rank.getMember().getProfileImageUrl())
                 .xp(rank.getXp())
                 .rank(rankPosition)
                 .build();
