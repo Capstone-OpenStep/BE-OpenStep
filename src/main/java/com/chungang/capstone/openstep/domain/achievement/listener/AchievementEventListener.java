@@ -5,15 +5,12 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import com.chungang.capstone.openstep.domain.Member.entity.Member;
-import com.chungang.capstone.openstep.domain.Task.entity.Task;
 import com.chungang.capstone.openstep.domain.Task.entity.TaskStatus;
 import com.chungang.capstone.openstep.domain.Task.repository.TaskRepository;
 import com.chungang.capstone.openstep.domain.achievement.enums.AchievementType;
@@ -91,7 +88,7 @@ public class AchievementEventListener {
 
 		try {
 			//활동 기반 꾸준한 개발자 업적 체크
-			checkConsistendDevAchievement(event);
+			checkConsistentDevAchievement(event);
 
 		} catch (Exception e) {
 			log.error("Error processing task activity event for user: {}", event.getMemberId(), e);
@@ -137,7 +134,7 @@ public class AchievementEventListener {
 		}
 	}
 
-	private void checkConsistendDevAchievement(TaskActivityEvent event) {
+	private void checkConsistentDevAchievement(TaskActivityEvent event) {
 		LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
 
 		// 최근 7일간 활동이 있었던 날들 조회
