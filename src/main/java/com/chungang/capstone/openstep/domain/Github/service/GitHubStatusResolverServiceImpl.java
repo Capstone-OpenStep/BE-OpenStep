@@ -47,7 +47,7 @@ public class GitHubStatusResolverServiceImpl implements GitHubStatusResolverServ
             TaskStatus newStatus;
             if (task.getStatus() == TaskStatus.PROGRESS) {
                 newStatus = TaskStatus.PROGRESS; // 작업 중인 상태
-            } else {
+            }else{
                 newStatus = TaskStatus.FORKED;
             }
             publishEventIfChanged(member, task, oldStatus, newStatus);
