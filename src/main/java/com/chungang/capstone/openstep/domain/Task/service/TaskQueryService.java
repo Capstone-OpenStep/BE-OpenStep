@@ -9,7 +9,6 @@ import com.chungang.capstone.openstep.domain.Rank.entity.TaskXpLog;
 import com.chungang.capstone.openstep.domain.Rank.repository.TaskXpLogRepository;
 import com.chungang.capstone.openstep.domain.Rank.service.RankCommandService;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.chungang.capstone.openstep.domain.Github.service.GitHubStatusResolverService;
@@ -20,10 +19,6 @@ import com.chungang.capstone.openstep.domain.Task.dto.TaskResponseDTO;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
 import com.chungang.capstone.openstep.domain.Task.entity.TaskStatus;
 import com.chungang.capstone.openstep.domain.Task.repository.TaskRepository;
-import com.chungang.capstone.openstep.domain.achievement.entity.MemberAchievement;
-import com.chungang.capstone.openstep.domain.achievement.event.PrCreatedEvent;
-import com.chungang.capstone.openstep.domain.achievement.event.TaskActivityEvent;
-import com.chungang.capstone.openstep.domain.achievement.event.TaskCompletedEvent;
 import com.chungang.capstone.openstep.domain.achievement.service.AchievementService;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
 import com.chungang.capstone.openstep.global.apiPayload.exception.TaskException;
@@ -262,5 +257,18 @@ public class TaskQueryService {
 		task.updatePrUrl(prUrl);
 		taskRepository.save(task);
 		return TaskConverter.toTaskDetail(task);
+	}
+
+	public TaskResponseDTO.Status updateTaskStatusToProgress(Long taskId, Member member) {
+		Task task = taskRepository.findById(taskId).orElseThrow(() ->
+			new TaskException(ErrorStatus.TASK_NOT_FOUND));
+
+		if(task.getStatus()!=TaskStatus.FORKED) {
+			throw new TaskException(ErrorStatus.TASK_STATUS_UPDATE_FORBIDDEN);
+		}
+		task.updateStatus(TaskStatus.PROGRESS);
+		taskRepository.save(task);
+
+		return TaskConverter.toTaskStatus(task);
 	}
 }

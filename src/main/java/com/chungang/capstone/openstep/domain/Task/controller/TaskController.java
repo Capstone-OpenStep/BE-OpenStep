@@ -14,6 +14,7 @@ import com.chungang.capstone.openstep.domain.Member.entity.Member;
 import com.chungang.capstone.openstep.domain.Task.converter.TaskConverter;
 import com.chungang.capstone.openstep.domain.Task.dto.TaskResponseDTO;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
+import com.chungang.capstone.openstep.domain.Task.entity.TaskStatus;
 import com.chungang.capstone.openstep.domain.Task.service.TaskQueryService;
 import com.chungang.capstone.openstep.global.apiPayload.ApiResponse;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.SuccessStatus;
@@ -56,6 +57,15 @@ public class TaskController {
 	) {
 		Member member= SecurityUtils.getCurrentMember();
 		return ApiResponse.onSuccess(SuccessStatus.TASK_BRANCH_GET_OK, taskQueryService.getStatusByTaskId(taskId,member));
+	}
+	@Operation(summary = "특정 테스크의 상태 변경 API", description = "특정 기여(테스크) 상태를 FORKED -> PROGRESS로 변경합니다.")
+	@PatchMapping("/{task-id}/status")
+	public ApiResponse<TaskResponseDTO.Status> updateTaskStatus(
+		@PathVariable("task-id") Long taskId
+	) {
+		Member member = SecurityUtils.getCurrentMember();
+		TaskResponseDTO.Status updatedStatus = taskQueryService.updateTaskStatusToProgress(taskId, member);
+		return ApiResponse.onSuccess(SuccessStatus.TASK_STATUS_UPDATE_OK, updatedStatus);
 	}
 
 

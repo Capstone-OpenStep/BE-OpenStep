@@ -30,10 +30,10 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 	long countByMemberIdAndStatus(@Param("memberId") Long memberId, @Param("status") TaskStatus status);
 
 	// 특정 날짜 이후의 활동이 있었던 날들 조회
-	@Query("SELECT DISTINCT DATE(t.updatedAt) FROM Task t WHERE t.member.memberId = :memberId AND t.updatedAt >= :fromDate ORDER BY DATE(t.updatedAt)")
+	@Query("SELECT DISTINCT CAST(t.createdAt AS LocalDate) FROM Task t WHERE t.member.memberId = :memberId AND t.createdAt >= :since ORDER BY CAST(t.createdAt AS LocalDate)")
 	List<LocalDate> findDistinctActivityDatesByMemberIdSince(
 		@Param("memberId") Long memberId,
-		@Param("fromDate") LocalDateTime fromDate
+		@Param("since") LocalDateTime since
 	);
 
 	// Explorer 업적용: distinct repo 개수
