@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.chungang.capstone.openstep.domain.Member.entity.Member;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
 import com.chungang.capstone.openstep.domain.Task.entity.TaskStatus;
+import com.chungang.capstone.openstep.domain.Task.event.TaskStatusChangedForXpEvent;
 import com.chungang.capstone.openstep.domain.achievement.event.PrCreatedEvent;
 import com.chungang.capstone.openstep.domain.achievement.event.TaskActivityEvent;
 import com.chungang.capstone.openstep.domain.achievement.event.TaskCompletedEvent;
@@ -37,6 +38,9 @@ public class TaskEventService {
 				oldStatus,
 				newStatus
 			));
+
+			eventPublisher.publishEvent(new TaskStatusChangedForXpEvent(
+				member.getMemberId(), task.getTaskId(), newStatus));
 
 			//pr 생성시
 			if(newStatus == TaskStatus.PR) {
