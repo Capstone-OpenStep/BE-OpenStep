@@ -9,6 +9,7 @@ import com.chungang.capstone.openstep.domain.Github.dto.PullRequestResponse;
 import com.chungang.capstone.openstep.domain.Member.entity.Member;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
 import com.chungang.capstone.openstep.domain.Task.entity.TaskStatus;
+import com.chungang.capstone.openstep.domain.Task.service.TaskCommandService;
 import com.chungang.capstone.openstep.domain.achievement.event.TaskActivityEvent;
 import com.chungang.capstone.openstep.domain.achievement.event.PrCreatedEvent;
 import com.chungang.capstone.openstep.domain.achievement.event.TaskCompletedEvent;
@@ -16,13 +17,14 @@ import com.chungang.capstone.openstep.domain.achievement.event.TaskCompletedEven
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Service
+//더이상 사용 X
 @RequiredArgsConstructor
 @Slf4j
 public class GitHubStatusResolverServiceImpl implements GitHubStatusResolverService {
 
     private final GitHubRestService gitHubRestService;
     private final ApplicationEventPublisher eventPublisher; // 추가
+    private final TaskCommandService taskCommandService; // 추가
 
     @Override
     public TaskStatus resolveStatus(Task task, Member member) {
@@ -52,6 +54,9 @@ public class GitHubStatusResolverServiceImpl implements GitHubStatusResolverServ
             }
             publishEventIfChanged(member, task, oldStatus, newStatus);
             return newStatus;
+        }else{
+            // PR이 존재하는 경우, PR URL 업데이트
+            taskCommandService.updatePrUrl(task, pr);
         }
 
         // 머지 or 반려 여부

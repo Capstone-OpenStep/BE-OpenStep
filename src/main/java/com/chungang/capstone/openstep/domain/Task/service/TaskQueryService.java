@@ -1,11 +1,10 @@
 package com.chungang.capstone.openstep.domain.Task.service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.chungang.capstone.openstep.domain.Rank.entity.TaskXpLog;
+import com.chungang.capstone.openstep.domain.Github.dto.GithubTaskInfo;
+import com.chungang.capstone.openstep.domain.Github.service.GithubInfoService;
 import com.chungang.capstone.openstep.domain.Rank.repository.TaskXpLogRepository;
 import com.chungang.capstone.openstep.domain.Rank.service.RankCommandService;
 
@@ -23,6 +22,7 @@ import com.chungang.capstone.openstep.domain.achievement.service.AchievementServ
 import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
 import com.chungang.capstone.openstep.global.apiPayload.exception.TaskException;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,22 +34,15 @@ public class TaskQueryService {
 	private final TaskRepository taskRepository;
 	private final RankCommandService rankCommandService;
 	private final TaskXpLogRepository taskXpLogRepository;
-	private final GitHubStatusResolverService githubStatusResolver;
 	private final AchievementService achievementService;
+	private final GithubInfoService gitHubInfoService;
+	private final TaskStatusResolver taskStatusResolver;
+	private final TaskUpdateService taskUpdateService;
+	private final TaskEventService taskEventService;
 
+	@Transactional
 	public TaskResponseDTO.TaskDetail getTaskDetailById(Long taskId, Member member) {
-		Task task = taskRepository.findById(taskId).orElseThrow(() ->
-			new TaskException(ErrorStatus.TASK_NOT_FOUND));
-
-		TaskStatus oldStatus = task.getStatus();
-		TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
-
-		// DB 캐시 상태가 다르면 update
-		if (oldStatus != resolvedStatus) {
-			task.updateStatus(resolvedStatus);
-			taskRepository.save(task);
-		}
-
+		Task task = syncTaskWithGitHub(taskId, member);
 		TaskResponseDTO.TaskDetail taskDetail = TaskConverter.toTaskDetail(task);
 
 		// 이 Task와 관련된 업적 정보 조회
@@ -67,18 +60,9 @@ public class TaskQueryService {
 		return TaskConverter.toTaskBranchName(task);
 	}
 
+	@Transactional
 	public TaskResponseDTO.Status getStatusByTaskId(Long taskId, Member member) {
-		Task task = taskRepository.findById(taskId).orElseThrow(() ->
-			new TaskException(ErrorStatus.TASK_NOT_FOUND));
-
-		TaskStatus oldStatus = task.getStatus();
-		TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
-
-		// DB 캐시 상태가 다르면 update
-		if (oldStatus != resolvedStatus) {
-			task.updateStatus(resolvedStatus);
-			taskRepository.save(task);
-		}
+		Task task = syncTaskWithGitHub(taskId, member);
 		return TaskConverter.toTaskStatus(task);
 	}
 
@@ -160,64 +144,29 @@ public class TaskQueryService {
 //		return updatedTasks;
 //	}
 
+	@Transactional
 	public List<Task> updateAllTaskStatus(Member member) {
 		List<Task> tasks = taskRepository.findAllByMember(member);
 
-		List<Task> updatedTasks = tasks.stream()
+		//github 동기화
+		return tasks.stream()
 				.map(task -> {
 					TaskStatus oldStatus = task.getStatus();
-					TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
+					//github 동기화
+					GithubTaskInfo githubInfo = gitHubInfoService.getGithubTaskInfo(task, member);
+					TaskStatus newStatus = taskStatusResolver.resolveStatus(task, githubInfo);
 
-					if (oldStatus!= resolvedStatus) {
-						task.updateStatus(resolvedStatus);
-						Task saved = taskRepository.save(task);
+					boolean updated = taskUpdateService.updateTaskByGithubInfo(task, newStatus, githubInfo);
 
-						handleXpGranting(member, saved, resolvedStatus);
-
-
-						return Optional.of(saved);
+					if (updated && oldStatus != newStatus) {
+						taskEventService.publishStatusChangeEvent(member, task, oldStatus, newStatus);
+						return Optional.of(task);
 					}
 					return Optional.<Task>empty();
 				})
 				.flatMap(Optional::stream)
 				.collect(Collectors.toList());
-
-		return updatedTasks;
 	}
-
-
-	private void handleXpGranting(Member member, Task task, TaskStatus newStatus) {
-		// 중복 지급 방지
-		if (taskXpLogRepository.existsByTaskAndStatus(task, newStatus)) return;
-
-		boolean shouldGrant = true;
-		if (newStatus == TaskStatus.PR) {
-			LocalDateTime today = LocalDate.now().atStartOfDay();
-			LocalDateTime tomorrow = today.plusDays(1);
-
-			int prCountToday = taskXpLogRepository.countByMemberAndStatusAndGrantedAtBetween(
-					member, TaskStatus.PR, today, tomorrow);
-			shouldGrant = prCountToday < 3;
-		}
-
-		// XP 지급
-		if (shouldGrant) {
-			rankCommandService.addXp(member, newStatus.getXp());
-		}
-
-		// 로그 기록
-		TaskXpLog log = TaskXpLog.builder()
-				.task(task)
-				.member(member)
-				.status(newStatus)
-				.xpGranted(shouldGrant)
-				.grantedAt(LocalDateTime.now())
-				.build();
-
-		taskXpLogRepository.save(log);
-	}
-
-
 
 	public Map<String, Long> getTaskStatistics(Member member) {
 		List<Task> tasks = taskRepository.findAllByMember(member);
@@ -242,33 +191,27 @@ public class TaskQueryService {
 		return categorizedStatistics;
 	}
 
+	@Deprecated
 	public TaskResponseDTO.TaskDetail updatePRUrl(Long taskId,String prUrl ,Member member) {
-	Task task = taskRepository.findById(taskId).orElseThrow(() ->
-			new TaskException(ErrorStatus.TASK_NOT_FOUND));
-		TaskStatus oldStatus = task.getStatus();
-		TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
-
-		// DB 캐시 상태가 다르면 update
-		if (oldStatus != resolvedStatus) {
-			task.updateStatus(resolvedStatus);
-			task = taskRepository.save(task);
-		}
-
+		Task task = syncTaskWithGitHub(taskId, member);
 		task.updatePrUrl(prUrl);
 		taskRepository.save(task);
 		return TaskConverter.toTaskDetail(task);
 	}
-
-	public TaskResponseDTO.Status updateTaskStatusToProgress(Long taskId, Member member) {
+	private Task syncTaskWithGitHub(Long taskId, Member member) {
 		Task task = taskRepository.findById(taskId).orElseThrow(() ->
 			new TaskException(ErrorStatus.TASK_NOT_FOUND));
 
-		if(task.getStatus()!=TaskStatus.FORKED) {
-			throw new TaskException(ErrorStatus.TASK_STATUS_UPDATE_FORBIDDEN);
-		}
-		task.updateStatus(TaskStatus.PROGRESS);
-		taskRepository.save(task);
+		TaskStatus oldStatus = task.getStatus();
+		//github 동기화
+		GithubTaskInfo githubInfo = gitHubInfoService.getGithubTaskInfo(task, member);
+		TaskStatus newStatus = taskStatusResolver.resolveStatus(task, githubInfo);
 
-		return TaskConverter.toTaskStatus(task);
+		boolean updated = taskUpdateService.updateTaskByGithubInfo(task, newStatus, githubInfo);
+
+		if (updated && oldStatus != newStatus) {
+			taskEventService.publishStatusChangeEvent(member, task, oldStatus, newStatus);
+		}
+		return task;
 	}
 }
