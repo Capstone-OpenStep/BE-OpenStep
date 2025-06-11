@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.chungang.capstone.openstep.domain.Github.dto.GithubTaskInfo;
+import com.chungang.capstone.openstep.domain.Github.service.GithubInfoService;
 import com.chungang.capstone.openstep.domain.Rank.entity.TaskXpLog;
 import com.chungang.capstone.openstep.domain.Rank.repository.TaskXpLogRepository;
 import com.chungang.capstone.openstep.domain.Rank.service.RankCommandService;
@@ -23,6 +25,7 @@ import com.chungang.capstone.openstep.domain.achievement.service.AchievementServ
 import com.chungang.capstone.openstep.global.apiPayload.code.status.ErrorStatus;
 import com.chungang.capstone.openstep.global.apiPayload.exception.TaskException;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,18 +39,25 @@ public class TaskQueryService {
 	private final TaskXpLogRepository taskXpLogRepository;
 	private final GitHubStatusResolverService githubStatusResolver;
 	private final AchievementService achievementService;
+	private final GithubInfoService gitHubInfoService;
+	private final TaskStatusResolver taskStatusResolver;
+	private final TaskUpdateService taskUpdateService;
+	private final TaskEventService taskEventService;
 
+	@Transactional
 	public TaskResponseDTO.TaskDetail getTaskDetailById(Long taskId, Member member) {
 		Task task = taskRepository.findById(taskId).orElseThrow(() ->
 			new TaskException(ErrorStatus.TASK_NOT_FOUND));
 
 		TaskStatus oldStatus = task.getStatus();
-		TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
+		//github 동기화
+		GithubTaskInfo githubInfo = gitHubInfoService.getGithubTaskInfo(task, member);
+		TaskStatus newStatus = taskStatusResolver.resolveStatus(task, githubInfo);
 
-		// DB 캐시 상태가 다르면 update
-		if (oldStatus != resolvedStatus) {
-			task.updateStatus(resolvedStatus);
-			taskRepository.save(task);
+		boolean updated = taskUpdateService.updateTaskByGithubInfo(task, newStatus, githubInfo);
+
+		if (updated && oldStatus != newStatus) {
+			taskEventService.publishStatusChangeEvent(member, task, oldStatus, newStatus);
 		}
 
 		TaskResponseDTO.TaskDetail taskDetail = TaskConverter.toTaskDetail(task);
@@ -168,6 +178,7 @@ public class TaskQueryService {
 					TaskStatus oldStatus = task.getStatus();
 					TaskStatus resolvedStatus = githubStatusResolver.resolveStatus(task, member);
 
+
 					if (oldStatus!= resolvedStatus) {
 						task.updateStatus(resolvedStatus);
 						Task saved = taskRepository.save(task);
@@ -253,7 +264,6 @@ public class TaskQueryService {
 			task.updateStatus(resolvedStatus);
 			task = taskRepository.save(task);
 		}
-
 		task.updatePrUrl(prUrl);
 		taskRepository.save(task);
 		return TaskConverter.toTaskDetail(task);

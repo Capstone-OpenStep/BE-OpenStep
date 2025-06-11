@@ -31,6 +31,7 @@ public class TaskResponseDTO {
 			String updatedAt,
 			Long issueId,
 			String issueUrl,
+			String prUrl,
 			List<AchievementDTO> achievements
 	) {
 		public static TaskDetail of(
@@ -42,11 +43,12 @@ public class TaskResponseDTO {
 			String createdAt,
 			String updatedAt,
 			Long issueId,
-			String issueUrl
+			String issueUrl,
+			String prUrl
 		) {
 			return new TaskDetail(
 				taskId, title, forkedUrl, status, branchName,
-				createdAt, updatedAt, issueId, issueUrl,
+				createdAt, updatedAt, issueId, issueUrl,prUrl,
 				new ArrayList<>()
 			);
 		}
@@ -55,7 +57,7 @@ public class TaskResponseDTO {
 		public TaskDetail withAchievements(List<AchievementDTO> achievements) {
 			return new TaskDetail(
 				taskId, title, forkedUrl, status, branchName,
-				createdAt, updatedAt, issueId, issueUrl,
+				createdAt, updatedAt, issueId, issueUrl,prUrl,
 				achievements != null ? achievements : new ArrayList<>()
 			);
 		}

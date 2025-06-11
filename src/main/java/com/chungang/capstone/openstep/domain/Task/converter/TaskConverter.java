@@ -17,7 +17,8 @@ public class TaskConverter {
 				task.getCreatedAt().toString(),
 				task.getUpdatedAt().toString(),
 				task.getIssue().getIssueId(),
-				task.getIssue().getGithubUrl()
+				task.getIssue().getGithubUrl(),
+				task.getPrUrl()
 		);
 	}
 	public static TaskResponseDTO.TaskBranchName toTaskBranchName(Task task){
