@@ -10,6 +10,7 @@ public class PullRequestResponse {
 		int number,
 		String state,
 
+		@JsonProperty("html_url")
 		String url,
 
 		@JsonProperty("created_at")

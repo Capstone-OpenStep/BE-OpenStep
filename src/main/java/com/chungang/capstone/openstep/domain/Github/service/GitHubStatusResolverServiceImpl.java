@@ -17,7 +17,7 @@ import com.chungang.capstone.openstep.domain.achievement.event.TaskCompletedEven
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Service
+//더이상 사용 X
 @RequiredArgsConstructor
 @Slf4j
 public class GitHubStatusResolverServiceImpl implements GitHubStatusResolverService {

@@ -15,6 +15,7 @@ import com.chungang.capstone.openstep.domain.Task.converter.TaskConverter;
 import com.chungang.capstone.openstep.domain.Task.dto.TaskResponseDTO;
 import com.chungang.capstone.openstep.domain.Task.entity.Task;
 import com.chungang.capstone.openstep.domain.Task.entity.TaskStatus;
+import com.chungang.capstone.openstep.domain.Task.service.TaskCommandService;
 import com.chungang.capstone.openstep.domain.Task.service.TaskQueryService;
 import com.chungang.capstone.openstep.global.apiPayload.ApiResponse;
 import com.chungang.capstone.openstep.global.apiPayload.code.status.SuccessStatus;
@@ -31,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class TaskController {
 
 	private final TaskQueryService taskQueryService;
+	private final TaskCommandService taskCommandService;
 
 	@Operation(summary = "특정 테스크 상세 조회 API", description = "특정 오픈소스 레포지토리의 기여(테스크) 정보를 조회합니다.")
 	@GetMapping("/{task-id}")
@@ -64,12 +66,13 @@ public class TaskController {
 		@PathVariable("task-id") Long taskId
 	) {
 		Member member = SecurityUtils.getCurrentMember();
-		TaskResponseDTO.Status updatedStatus = taskQueryService.updateTaskStatusToProgress(taskId, member);
+		TaskResponseDTO.Status updatedStatus = taskCommandService.updateTaskStatusToProgress(taskId, member);
 		return ApiResponse.onSuccess(SuccessStatus.TASK_STATUS_UPDATE_OK, updatedStatus);
 	}
 
 
 
+	@Deprecated
 	@Operation(summary = "특정 테스크의 PR URL 업데이트 API", description = "특정 오픈소스 레포지토리의 기여(테스크) PR URL을 업데이트합니다. forked 상태 이외의 상태에서만 가능합니다.")
 	@PatchMapping("/{task-id}/pr")
 	public ApiResponse<TaskResponseDTO.TaskDetail> updatePRUrl (
